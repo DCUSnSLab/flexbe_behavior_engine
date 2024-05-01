@@ -22,8 +22,8 @@ Changelog for package flexbe_mirror
 * updates to dependencies for ROS build farm
 * clean up some spam to FlexBE App console and just send to local terminal and log
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * 2.3.3
 * update to protect against executor calls after unsubscribe/shutdown
 * streamline pub/sub for mirror; cleanup on behavior shutdown
