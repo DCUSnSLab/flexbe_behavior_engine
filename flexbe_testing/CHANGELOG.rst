@@ -19,6 +19,18 @@ Changelog for package flexbe_testing
 * remove rclpy from CMakeLists.txt
 * remove unnecessary rclcpp depends
 
+Forthcoming
+-----------
+* 2.3.3
+* update for change in yaml loading for Iron messages; subscriber state test still not functional
+* 2.3.2
+* 2.3.1
+* 2.3.0
+* update CMakeLists cmake_minimum_version
+* Updates to dependencies for ROS build farm
+* remove rclpy from CMakeLists.txt
+* remove unnecessary rclcpp depends
+
 2.2.0 (2023-06-29)
 ------------------
 * update to support pytest unittest cases via colcon test; pylint, flake8, and pep257 cleanup

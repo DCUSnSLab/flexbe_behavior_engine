@@ -22,6 +22,19 @@ Changelog for package flexbe_mirror
 * updates to dependencies for ROS build farm
 * clean up some spam to FlexBE App console and just send to local terminal and log
 
+Forthcoming
+-----------
+* 2.3.3
+* update to protect against executor calls after unsubscribe/shutdown
+* streamline pub/sub for mirror; cleanup on behavior shutdown
+* destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
+* 2.3.2
+* 2.3.1
+* 2.3.0
+* flake8 cleanup; make test consistent; protect against build farm timing issue
+* Updates to dependencies for ROS build farm
+* clean up some spam to FlexBE App console and just send to local terminal and log
+
 2.2.0 (2023-06-29)
 ------------------
 * Activate mirror in new thread on receipt of new structure (prevent deadlock)

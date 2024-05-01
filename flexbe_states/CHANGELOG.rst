@@ -25,6 +25,19 @@ Changelog for package flexbe_states
 * use wait duration with proxy action client and add timeout
 * Updates to dependencies for ROS build farm
 
+Forthcoming
+-----------
+* 2.3.3
+* destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
+* update for change in yaml loading for Iron messages; subscriber state test still not functional
+* 2.3.2
+* 2.3.1
+* modify input to allow lists or tuples (or just csv numbers); add pickle warning; post user prompt as hint to FlexBE log.
+* 2.3.0
+* use wait duration in input_state; modify is_available for current status check not wait; update action client test
+* add input_action_server with UI and update handling inside input_state (*Significant*)
+* Updates to dependencies for ROS build farm
+
 2.2.0 (2023-06-29)
 ------------------
 * update to use flexbe_testing with colcon test; pylint, flake8, pep257 cleanup

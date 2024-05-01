@@ -23,6 +23,18 @@ Changelog for package flexbe_input
   * WARNING: This change to input_state.py may require changes to how data is being sent
 * Updates to dependencies for ROS build farm
 
+Forthcoming
+-----------
+* 2.3.3
+* destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
+* 2.3.2
+* use standard queue; remove python-six dependency
+* 2.3.1
+* modify input to allow lists or tuples (or just csv numbers); add pickle warning; post user prompt as hint to FlexBE log.
+* 2.3.0
+* add input_action_server with UI and update handling inside input_state (*Significant*)
+* Updates to dependencies for ROS build farm
+
 2.2.0 (2023-06-29)
 ------------------
 * pep257, flake8, and pylint cleanup
