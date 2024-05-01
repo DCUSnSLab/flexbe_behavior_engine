@@ -1,8 +1,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_mirror
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Forthcoming
------------
+3.0.0 (2024-05-01)
+------------------
+* update with state map and changes to concurrent handling
+* allow removing action clients and service callers
 * flake8, pep257 and codestyle checks
 * reinitialize existing state machine instead of rebuilding on sync (1000x faster)
 * fix CONSTANT style across flexbe_behavior_engine
