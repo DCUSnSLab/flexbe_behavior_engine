@@ -31,7 +31,7 @@
 
 """Realize behavior-specific logging."""
 
-from rclpy.exceptions import ParameterNotDeclaredException 
+from rclpy.exceptions import ParameterNotDeclaredException
 from rclpy.node import Node
 from rclpy.duration import Duration
 
@@ -94,15 +94,15 @@ class Logger:
         Logger.local(text, severity)
 
     @staticmethod
-    def log_throttle(period : float, text: str, severity : int):
+    def log_throttle(period: float, text: str, severity: int):
         # create unique identifier for each logging message
         log_id = f"{severity}_{text}"
         time_now = Logger._node.get_clock().now()
         # only log when it's the first time or period time has passed for the logging message
-        if not log_id in Logger._last_logged.keys() or \
-            time_now - Logger._last_logged[log_id] > Duration(seconds=period):
-                Logger.log(text, severity)
-                Logger._last_logged.update({log_id: time_now})
+        if log_id not in Logger._last_logged.keys() or \
+           time_now - Logger._last_logged[log_id] > Duration(seconds=period):
+            Logger.log(text, severity)
+            Logger._last_logged.update({log_id: time_now})
 
         if len(Logger._last_logged) > Logger.MAX_LAST_LOGGED_SIZE:
             # iterate through last logged items, sorted by the timestamp (oldest last)
