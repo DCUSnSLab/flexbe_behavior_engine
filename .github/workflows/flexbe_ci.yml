@@ -10,15 +10,11 @@ jobs:
       matrix:
         ros: [iron, rolling]
         include:
-        # - os: ubuntu-22.04
-        #   ros: humble
-        #   python: python3
-        #   ci_branch: ros2-devel
         - os: ubuntu-22.04
           ros: iron
           python: python3
           ci_branch: ros2-devel
-        - os: ubuntu-22.04
+        - os: ubuntu-24.04
           ros: rolling
           python: python3
           ci_branch: ros2-devel
