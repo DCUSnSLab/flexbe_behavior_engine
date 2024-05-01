@@ -23,6 +23,9 @@ Changelog for package flexbe_input
   * WARNING: This change to input_state.py may require changes to how data is being sent
 * Updates to dependencies for ROS build farm
 
+3.0.0 (2024-05-01)
+------------------
+
 2.3.4 (2024-05-01)
 ------------------
 * 2.3.3

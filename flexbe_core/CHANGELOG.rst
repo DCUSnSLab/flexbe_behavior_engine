@@ -1,8 +1,9 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Forthcoming
------------
+3.0.0 (2024-05-01)
+------------------
+* update with state map and changes to concurrent handling
 * add options to remove service callers and action clients
 * proxy publisher dictionary usage
 * use modern style names with deprecated flag

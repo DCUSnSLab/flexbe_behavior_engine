@@ -1,8 +1,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_states
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Forthcoming
------------
+3.0.0 (2024-05-01)
+------------------
+* update with state map and changes to concurrent handling
+* allow removing action clients and service callers
 * add options to remove service callers and action clients
 * flake8, pep257 and codestyle checks
 
