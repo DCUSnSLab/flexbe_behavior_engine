@@ -25,8 +25,8 @@ Changelog for package flexbe_states
 * use wait duration with proxy action client and add timeout
 * Updates to dependencies for ROS build farm
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * 2.3.3
 * destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
 * update for change in yaml loading for Iron messages; subscriber state test still not functional

@@ -19,8 +19,8 @@ Changelog for package flexbe_testing
 * remove rclpy from CMakeLists.txt
 * remove unnecessary rclcpp depends
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * 2.3.3
 * update for change in yaml loading for Iron messages; subscriber state test still not functional
 * 2.3.2

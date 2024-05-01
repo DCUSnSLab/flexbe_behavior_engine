@@ -22,8 +22,8 @@ Changelog for package flexbe_onboard
 * clean up some spam to FlexBE App console and just send to local terminal and log
 * include package name in behavior request (requires flexbe_app 3.1+) to allow duplicate behavior names in packages
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * 2.3.3
 * destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
 * 2.3.2

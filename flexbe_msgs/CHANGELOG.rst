@@ -16,8 +16,8 @@ Changelog for package flexbe_msgs
 * update CMakeLists cmake_minimum_version
 * Updates to dependencies for ROS build farm
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * 2.3.3
 * 2.3.2
 * 2.3.1
