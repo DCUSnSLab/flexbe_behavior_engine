@@ -38,6 +38,7 @@ import rclpy
 from rclpy.action import ActionServer
 from rclpy.executors import MultiThreadedExecutor
 
+from action_msgs.msg import GoalStatus
 from std_msgs.msg import String
 from std_srvs.srv import Trigger
 from flexbe_msgs.action import BehaviorExecution
@@ -278,8 +279,13 @@ class TestProxies(unittest.TestCase):
 
         self.assertTrue(client.has_result(topic1))
 
+        self.node.get_logger().info("validate action client result 1 ... ")
         result = client.get_result(topic1)
         self.assertEqual(result.outcome, 'ok')
+
+        status = client.get_state(topic1)
+        self.assertEqual(status, GoalStatus.STATUS_SUCCEEDED)
+        self.node.get_logger().info("validate action client succeeded - OK! ")
 
         client.send_goal(topic1, BehaviorExecution.Goal(), wait_duration=1.0)
 
@@ -289,6 +295,21 @@ class TestProxies(unittest.TestCase):
             self.assertTrue(client.is_active(topic1) or client.has_result(topic1))
 
         self.assertFalse(client.is_active(topic1))
+
+        self.node.get_logger().info("validate action client result 2 ... ")
+        result = client.get_result(topic1)
+        self.assertEqual(result.outcome, 'ok')
+
+        status = client.get_state(topic1)
+        self.assertEqual(status, GoalStatus.STATUS_SUCCEEDED)
+        self.node.get_logger().info("validate action client succeeded 2 - OK! ")
+
+        self.assertTrue(client.has_result(topic1))
+        client.remove_result(topic1)
+        self.assertIsNone(client._result.get(topic1))
+        self.assertIsNone(client._result_status.get(topic1))
+        self.assertFalse(client.has_result(topic1))
+        self.node.get_logger().info("validated remove_result! ")
 
         self.assertFalse(client.is_available('/not_there'))
         client = ProxyActionClient({'/invalid': BehaviorExecution}, wait_duration=.1)
