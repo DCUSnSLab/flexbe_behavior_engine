@@ -22,6 +22,18 @@ Changelog for package flexbe_onboard
 * clean up some spam to FlexBE App console and just send to local terminal and log
 * include package name in behavior request (requires flexbe_app 3.1+) to allow duplicate behavior names in packages
 
+Forthcoming
+-----------
+* 2.3.3
+* destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
+* 2.3.2
+* 2.3.1
+* 2.3.0
+* flake8 cleanup; make test consistent; protect against build farm timing issue
+* Updates to dependencies for ROS build farm
+* clean up some spam to FlexBE App console and just send to local terminal and log
+* include package name in behavior request (requires latest flexbe_app) to allow duplicate behavior names in packages
+
 2.2.0 (2023-06-29)
 ------------------
 * Modify to used behavior_id (checksum) and behavior_key consistently
