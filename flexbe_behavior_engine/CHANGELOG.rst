@@ -1,6 +1,13 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_behavior_engine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Forthcoming
+-----------
+* flake 8 cleanup
+* support state id and concurrency handling
+* specify version 4.0+ of the FlexBE UI
+* add link for new flexbe_webui 
+
 2.3.3 (2023-08-09)
 ------------------
 
