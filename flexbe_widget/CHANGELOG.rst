@@ -21,8 +21,8 @@ Changelog for package flexbe_widget
 * remove unnecessary rclcpp depends
 * include package name in behavior request (requires flexbe_app 3.1+) to allow duplicate behavior names in packages
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * 2.3.3
 * 2.3.2
 * 2.3.1

@@ -27,8 +27,8 @@ Changelog for package flexbe_core
 * clean up some spam to FlexBE app console
 * include package name in behavior request (requires flexbe_app 3.1+) to allow duplicate behavior names in packages
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * proxy action client: remove result_status and test proxy status
 * Fixed bug when trying to get result state/GoalStatus.
 * Add throttle option for logging (PR #14)

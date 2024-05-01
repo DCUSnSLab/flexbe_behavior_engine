@@ -23,8 +23,8 @@ Changelog for package flexbe_input
   * WARNING: This change to input_state.py may require changes to how data is being sent
 * Updates to dependencies for ROS build farm
 
-Forthcoming
------------
+2.3.4 (2024-05-01)
+------------------
 * 2.3.3
 * destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
 * 2.3.2
