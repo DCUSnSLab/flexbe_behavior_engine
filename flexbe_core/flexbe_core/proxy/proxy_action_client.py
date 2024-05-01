@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -231,12 +231,13 @@ class ProxyActionClient:
     @classmethod
     def remove_result(cls, topic):
         """
-        Remove the latest result message of the given action call.
+        Remove the latest results of the given action call.
 
         @type topic: string
         @param topic: The topic of interest.
         """
         ProxyActionClient._result[topic] = None
+        ProxyActionClient._result_status[topic] = None
 
     @classmethod
     def has_feedback(cls, topic):

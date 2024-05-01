@@ -39,7 +39,8 @@ from rclpy.executors import MultiThreadedExecutor
 from flexbe_core import set_node, EventState, OperatableStateMachine
 from flexbe_core.core.exceptions import StateError, StateMachineError, UserDataError
 from flexbe_core.proxy import initialize_proxies, shutdown_proxies
-from flexbe_core.logger import Logger 
+from flexbe_core.logger import Logger
+
 
 class TestLogger(unittest.TestCase):
     """Test FlexBE Logger handling."""
@@ -95,9 +96,9 @@ class TestLogger(unittest.TestCase):
             def __init__(self):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
-                self._trials = Logger.MAX_LAST_LOGGED_SIZE*2 
+                self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
                 Logger.logerr_throttle(0.0, "test")
- 
+
             def execute(self, userdata):
                 Logger.logerr_throttle(0.0, "test")
                 self._trials -= 1
@@ -108,16 +109,16 @@ class TestLogger(unittest.TestCase):
         sm = OperatableStateMachine(outcomes=['done'])
         with sm:
             OperatableStateMachine.add('state', state_instance, transitions={'done': 'done'})
-        outcome = None 
+        outcome = None
         self.assertEqual(Logger.MAX_LAST_LOGGED_SIZE, 100)  # default size
         self.assertAlmostEqual(Logger.LAST_LOGGED_CLEARING_RATIO, 0.25)  # default ratio
-        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE*2 )
+        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE * 2)
         while outcome is None:
             outcome = sm.execute(None)
             self.assertEqual(len(Logger._last_logged), 1)
         self.assertEqual(outcome, "done")
-        self.assertEqual(state_instance._trials, 0 )
- 
+        self.assertEqual(state_instance._trials, 0)
+
         self.assertIsNone(sm._last_exception)
         self.node.get_logger().info("test_throttle_logger_one  - OK! ")
 
@@ -137,9 +138,9 @@ class TestLogger(unittest.TestCase):
             def __init__(self):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
-                self._trials = Logger.MAX_LAST_LOGGED_SIZE*2 
+                self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
                 Logger.logerr_throttle(0.01, f"0_test")
- 
+
             def execute(self, userdata):
                 Logger.logerr_throttle(0.01, f"{self._trials}_test")
                 self._trials -= 1
@@ -150,10 +151,10 @@ class TestLogger(unittest.TestCase):
         sm = OperatableStateMachine(outcomes=['done'])
         with sm:
             OperatableStateMachine.add('state', state_instance, transitions={'done': 'done'})
-        outcome = None 
+        outcome = None
         self.assertEqual(Logger.MAX_LAST_LOGGED_SIZE, 200)  # default size
         self.assertAlmostEqual(Logger.LAST_LOGGED_CLEARING_RATIO, 0.35)  # default ratio
-        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE*2 )
+        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE * 2)
         while outcome is None:
             outcome = sm.execute(None)
             self.assertTrue(1 < len(Logger._last_logged) <= Logger.MAX_LAST_LOGGED_SIZE)
@@ -180,9 +181,9 @@ class TestLogger(unittest.TestCase):
             def __init__(self):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
-                self._trials = Logger.MAX_LAST_LOGGED_SIZE*2 
+                self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
                 Logger.logerr_throttle(0.01, f"0_test")
- 
+
             def execute(self, userdata):
                 Logger.logerr(f"{self._trials}_test")
                 Logger.logerr_throttle(0.0, f"{self._trials}_test")
@@ -197,8 +198,8 @@ class TestLogger(unittest.TestCase):
         sm = OperatableStateMachine(outcomes=['done'])
         with sm:
             OperatableStateMachine.add('state', state_instance, transitions={'done': 'done'})
-        outcome = None 
-        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE*2 )
+        outcome = None
+        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE * 2)
         self.assertEqual(Logger.MAX_LAST_LOGGED_SIZE, 100)  # parameterized size
         self.assertAlmostEqual(Logger.LAST_LOGGED_CLEARING_RATIO, 0.7)  # parameterized
         while outcome is None:
@@ -227,9 +228,9 @@ class TestLogger(unittest.TestCase):
             def __init__(self):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
-                self._trials = Logger.MAX_LAST_LOGGED_SIZE*2 
+                self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
                 Logger.logerr_throttle(0.01, f"0_test")
- 
+
             def execute(self, userdata):
                 Logger.logerr(f"{self._trials}_test")
                 Logger.logerr_throttle(0.0, f"{self._trials}_test")
@@ -244,8 +245,8 @@ class TestLogger(unittest.TestCase):
         sm = OperatableStateMachine(outcomes=['done'])
         with sm:
             OperatableStateMachine.add('state', state_instance, transitions={'done': 'done'})
-        outcome = None 
-        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE*2 )
+        outcome = None
+        self.assertEqual(state_instance._trials, Logger.MAX_LAST_LOGGED_SIZE * 2)
         self.assertEqual(Logger.MAX_LAST_LOGGED_SIZE, 120)  # default size
         self.assertAlmostEqual(Logger.LAST_LOGGED_CLEARING_RATIO, 0.22)  # default ratio
         while outcome is None:
@@ -257,6 +258,7 @@ class TestLogger(unittest.TestCase):
 
         self.assertIsNone(sm._last_exception)
         self.node.get_logger().info("test_throttle_logger_multiple_params  - OK! ")
+
 
 if __name__ == '__main__':
     unittest.main()
