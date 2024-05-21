@@ -32,6 +32,7 @@
 from flexbe_core import EventState, Logger
 
 from flexbe_core.proxy import ProxySubscriberCached
+from flexbe_core.proxy.qos import QOS_DEFAULT
 
 
 class SubscriberState(EventState):
@@ -39,9 +40,11 @@ class SubscriberState(EventState):
     Gets the latest message on the given topic and stores it to userdata.
 
     -- topic 		string		The topic on which should be listened.
+    -- msg_type 	type		The type of messages of this topic.
     -- blocking 	bool 		Blocks until a message is received.
     -- clear 		bool 		Drops last message on this topic on enter
                                 in order to only handle message received since this state is active.
+    -- qos  		QoSProfile  A QoSProfile to apply to the subscription.
 
     #> message		object		Latest message on the given topic of the respective type.
 
@@ -49,13 +52,14 @@ class SubscriberState(EventState):
     <= unavailable 				The topic is not available when this state becomes actives.
     """
 
-    def __init__(self, topic, msg_type="", blocking=True, clear=False):
+    def __init__(self, topic, msg_type="", blocking=True, clear=False, qos=QOS_DEFAULT):
         super(SubscriberState, self).__init__(outcomes=['received', 'unavailable'],
                                               output_keys=['message'])
         self._topic = topic
         self._msg_type = msg_type
         self._blocking = blocking
         self._clear = clear
+        self._qos = qos
         self._connected = False
         self._sub = None
         if not self._connect():
@@ -91,7 +95,7 @@ class SubscriberState(EventState):
 
     def _connect(self):
         try:
-            self._sub = ProxySubscriberCached({self._topic: self._msg_type}, inst_id=id(self))
+            self._sub = ProxySubscriberCached({self._topic: self._msg_type}, qos=self._qos, inst_id=id(self))
             self._connected = True
             return True
         except Exception:  # pylint: disable=W0703
