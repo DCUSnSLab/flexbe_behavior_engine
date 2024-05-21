@@ -87,7 +87,13 @@ class BehaviorLibrary:
             if os.path.isdir(entry_path):
                 self._add_behavior_manifests(entry_path, pkg)
             elif entry.endswith(".xml") and not entry.startswith("#"):
-                mrt = ET.parse(entry_path).getroot()
+                try:
+                    mrt = ET.parse(entry_path).getroot()
+                except ET.ParseError as exc:
+                    Logger.logerr(f"XML parsing error while loading behavior manifest\n    for '{entry_path}'\n"
+                                  f"    {exc}\n    skipping loading of '{entry}' ...")
+                    continue
+
                 # structure sanity check
                 if (mrt.tag != "behavior"
                         or len(mrt.findall(".//executable")) == 0
