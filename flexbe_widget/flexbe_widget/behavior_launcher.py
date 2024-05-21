@@ -46,7 +46,8 @@ from rosidl_runtime_py import get_interface_path
 
 from std_msgs.msg import Int32, String
 
-from flexbe_msgs.msg import BehaviorModification, BehaviorRequest, BehaviorSelection, BEStatus, ContainerStructure
+from flexbe_msgs.msg import BehaviorModification, BehaviorRequest, BehaviorSelection
+from flexbe_msgs.msg import BehaviorSync, BEStatus, ContainerStructure
 
 from flexbe_core import BehaviorLibrary, Logger, MIN_UI_VERSION
 from flexbe_core.core import StateMap
@@ -65,6 +66,8 @@ class BehaviorLauncher(Node):
         self._sub = self.create_subscription(BehaviorRequest, Topics._REQUEST_BEHAVIOR_TOPIC, self._request_callback, 100)
         self._version_sub = self.create_subscription(String, Topics._UI_VERSION_TOPIC, self._version_callback, 1)
         self._status_sub = self.create_subscription(BEStatus, Topics._ONBOARD_STATUS_TOPIC, self._status_callback, 100)
+        self._onboard_heartbeat_sub = self.create_subscription(BehaviorSync, Topics._ONBOARD_HEARTBEAT_TOPIC,
+                                                               self._onboard_heartbeat_callback, 10)
 
         self._pub = self.create_publisher(BehaviorSelection, Topics._START_BEHAVIOR_TOPIC, 100)
         self._status_pub = self.create_publisher(BEStatus, Topics._ONBOARD_STATUS_TOPIC, 100)
@@ -75,6 +78,7 @@ class BehaviorLauncher(Node):
 
         # Require periodic events in case behavior is not connected to allow orderly shutdown
         self._heartbeat_timer = self.create_timer(2.0, self.heartbeat_timer_callback)
+        self._last_onboard_heartbeat = None
 
         self.get_logger().info("%d behaviors available, ready for start request." % self._behavior_lib.count_behaviors())
 
@@ -85,6 +89,19 @@ class BehaviorLauncher(Node):
         Guarantee some event triggers wake up so that we can catch Ctrl-C in case where no active messages are available.
         """
         self._heartbeat_pub.publish(Int32(data=self.get_clock().now().seconds_nanoseconds()[0]))
+
+        if self._last_onboard_heartbeat is None:
+            self.get_logger().warn(f"Behavior Launcher has NOT received update from onboard behavior engine!")
+        else:
+            elapsed = self.get_clock().now() - self._last_onboard_heartbeat
+            if elapsed.nanoseconds > 2e9:
+                self.get_logger().warn(f"Behavior Launcher is NOT receiving updates from onboard behavior engine!")
+                self._last_onboard_heartbeat = None
+        
+    def _onboard_heartbeat_callback(self, msg):
+        """Record time of last onboard heartbeat."""
+        self._last_onboard_heartbeat = self.get_clock().now()
+
 
     def _status_callback(self, msg):
         if msg.code in [BEStatus.READY, BEStatus.FINISHED, BEStatus.FAILED, BEStatus.ERROR, BEStatus.RUNNING, BEStatus.STARTED]:
@@ -201,10 +218,10 @@ class BehaviorLauncher(Node):
         vui = BehaviorLauncher._parse_version(msg.data)
         vex = BehaviorLauncher._parse_version(MIN_UI_VERSION)
         if vui < vex:
-            Logger.logwarn('FlexBE App needs to be updated!\n'
+            Logger.logwarn('FlexBE UI needs to be updated!\n'
                            f'Behavior launcher requires at least version {MIN_UI_VERSION}, '
                            f' but you have {msg.data}\n'
-                           'Please update the flexbe_app software.')
+                           'Please update the FlexBE UI software.')
 
     @staticmethod
     def _parse_version(v):
@@ -263,8 +280,12 @@ def behavior_launcher_main(node_args=None):
 
     if behavior != "":
         print(f"Set up behavior_launcher with '{behavior}' ...", flush=True)
-        for _ in range(100):
+        prior_clock = launcher.get_clock().now()
+        while launcher._last_onboard_heartbeat is None:
             # Let stuff get going before launching behavior request
+            if (launcher.get_clock().now() - prior_clock).nanoseconds > 2e9:
+                print(f"Waiting for onboard behavior engine to launch '{behavior}' ...", flush=True)
+                prior_clock = launcher.get_clock().now()
             executor.spin_once(timeout_sec=0.001)
 
         request = BehaviorRequest(behavior_name=behavior, autonomy_level=autonomy)
