@@ -266,6 +266,13 @@ class FlexbeMirror(Node):
                                       name=f"start_mirror_{msg.behavior_id}_{start_time.nanoseconds}")
             thread.daemon = True
             thread.start()
+        elif self._sm and msg.code in (BEStatus.ERROR, BEStatus.FAILED):
+            Logger.localinfo(f'Mirror - received BEstate={msg.code} - issue ocurred onboard - stop current mirror!')
+            thread = threading.Thread(target=self._stop_mirror, args=[msg, start_time],
+                                      name=f"stop_mirror_{msg.behavior_id}_{start_time.nanoseconds}")
+            thread.daemon = True
+            thread.start()
+            Logger.logerr(f'Onboard error - stopped behavior mirror (code={msg.code})')
         elif self._sm and not self._stopping and msg.code == BEStatus.FINISHED:
             Logger.localinfo(f'Mirror - received BEstate={msg.code} - stop current mirror')
             thread = threading.Thread(target=self._stop_mirror, args=[msg, start_time],
