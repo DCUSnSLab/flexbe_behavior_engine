@@ -1,6 +1,9 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_behavior_engine
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.1 (2024-05-31)
+------------------
+
 3.0.0 (2024-05-01)
 ------------------
 * update with state map and changes to concurrent handling
@@ -8,7 +11,7 @@ Changelog for package flexbe_behavior_engine
 * flake 8 cleanup
 * support state id and concurrency handling
 * specify version 4.0+ of the FlexBE UI
-* add link for new flexbe_webui 
+* add link for new flexbe_webui
 
 2.3.4 (2024-05-01)
 ------------------
@@ -23,7 +26,7 @@ Changelog for package flexbe_behavior_engine
 
 2.3.1 (2023-07-31)
 ------------------
-* Update flexbe_ci.yml for actions/checkout@v3 
+* Update flexbe_ci.yml for actions/checkout@v3
 
 2.3.0 (2023-07-20)
 ------------------
@@ -37,7 +40,7 @@ Changelog for package flexbe_behavior_engine
   - rework mirror and be_launcher to prevent deadlocks
   - add heartbeat messages to mirror and launcher
   - pep257 and flake8 cleanup
-* [flexbe_msgs] Add comments and modify BehaviorSelection message to use 
+* [flexbe_msgs] Add comments and modify BehaviorSelection message to use
   behavior_key and behavior_id for consistency with other messages
 * update README links; tweak LICENSE and package info
 * Modify shutdown handling for clean stop

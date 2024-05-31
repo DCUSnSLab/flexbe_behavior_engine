@@ -1,11 +1,20 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_onboard
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.1 (2024-05-31)
+------------------
+* use onboard heartbeat to trigger launcher
+* clean up tabs in subscriber state
+* tweak UI message
+
 3.0.0 (2024-05-01)
 ------------------
 * update with state map and changes to concurrent handling
 * allow removing action clients and service callers
 * support for new state id and concurrency handling
+
+2.3.4 (2024-05-01)
+------------------
 
 2.3.3 (2023-08-09)
 ------------------
@@ -27,18 +36,6 @@ Changelog for package flexbe_onboard
 * updates to dependencies for ROS build farm
 * clean up some spam to FlexBE App console and just send to local terminal and log
 * include package name in behavior request (requires flexbe_app 3.1+) to allow duplicate behavior names in packages
-
-2.3.4 (2024-05-01)
-------------------
-* 2.3.3
-* destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
-* 2.3.2
-* 2.3.1
-* 2.3.0
-* flake8 cleanup; make test consistent; protect against build farm timing issue
-* Updates to dependencies for ROS build farm
-* clean up some spam to FlexBE App console and just send to local terminal and log
-* include package name in behavior request (requires latest flexbe_app) to allow duplicate behavior names in packages
 
 2.2.0 (2023-06-29)
 ------------------
