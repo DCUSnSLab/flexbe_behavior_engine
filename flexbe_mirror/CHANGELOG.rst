@@ -1,6 +1,16 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_mirror
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.3.5 (2024-05-31)
+------------------
+* remove unnecessary entry points (#15)
+* update change log
+
+2.3.4 (2024-05-01)
+------------------
+* update to protect against executor calls after unsubscribe/shutdown
+
 2.3.3 (2023-08-09)
 ------------------
 * streamline pub/sub for mirror
@@ -20,19 +30,6 @@ Changelog for package flexbe_mirror
 * flake8 cleanup; make test consistent
 * protect against build farm timing issue
 * updates to dependencies for ROS build farm
-* clean up some spam to FlexBE App console and just send to local terminal and log
-
-2.3.4 (2024-05-01)
-------------------
-* 2.3.3
-* update to protect against executor calls after unsubscribe/shutdown
-* streamline pub/sub for mirror; cleanup on behavior shutdown
-* destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
-* 2.3.2
-* 2.3.1
-* 2.3.0
-* flake8 cleanup; make test consistent; protect against build farm timing issue
-* Updates to dependencies for ROS build farm
 * clean up some spam to FlexBE App console and just send to local terminal and log
 
 2.2.0 (2023-06-29)

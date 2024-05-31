@@ -1,6 +1,16 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_widget
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.3.5 (2024-05-31)
+------------------
+* use onboard heartbeat to trigger launcher
+* add command line argument to allow quicker startup
+* clean up tabs in subscriber state
+
+2.3.4 (2024-05-01)
+------------------
+
 2.3.3 (2023-08-09)
 ------------------
 
@@ -20,20 +30,6 @@ Changelog for package flexbe_widget
 * remove rclpy from CMakeLists.txt
 * remove unnecessary rclcpp depends
 * include package name in behavior request (requires flexbe_app 3.1+) to allow duplicate behavior names in packages
-
-2.3.4 (2024-05-01)
-------------------
-* 2.3.3
-* 2.3.2
-* 2.3.1
-* add non-interactive mode to create_repo for CI
-* update create_repo script for new ros2-devel release of https://github.com/FlexBE/flexbe_project_behaviors
-* 2.3.0
-* update CMakeLists cmake_minimum_version
-* Updates to dependencies for ROS build farm
-* remove rclpy from CMakeLists.txt
-* remove unnecessary rclcpp depends
-* include package name in behavior request (requires latest flexbe_app) to allow duplicate behavior names in packages
 
 2.2.0 (2023-06-29)
 ------------------

@@ -1,6 +1,19 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.3.5 (2024-05-31)
+------------------
+* Add parsing check to handle exceptions in manifest
+* update change log
+
+
+2.3.4 (2024-05-01)
+------------------
+* proxy action client: remove result_status and test proxy status
+* Fixed bug when trying to get result state/GoalStatus.
+* Add throttle option for logging (PR #14)
+
 2.3.3 (2023-08-09)
 ------------------
 * destroy sub/pub/client in executor thread
@@ -26,25 +39,6 @@ Changelog for package flexbe_core
 * Modify sync messaging to avoid issue if not active state when behavior shuts down
 * clean up some spam to FlexBE app console
 * include package name in behavior request (requires flexbe_app 3.1+) to allow duplicate behavior names in packages
-
-2.3.4 (2024-05-01)
-------------------
-* proxy action client: remove result_status and test proxy status
-* Fixed bug when trying to get result state/GoalStatus.
-* Add throttle option for logging (PR #14)
-* 2.3.3
-* update to protect against executor calls after unsubscribe/shutdown
-* destroy sub/pub/client in executor thread; use SingleThreadedExecutor without callback groups; use basic pub/sub for onboard; cleanup
-* 2.3.2
-* 2.3.1
-* 2.3.0
-* use wait duration in input_state; modify is_available for current status check not wait; update action client test
-* add wait_duration to proxy action client send goal and other tweaks
-* flake8 cleanup; make test consistent; protect against build farm timing issue
-* cleanup; modify handling of existing subscriptions
-* Updates to dependencies for ROS build farm
-* Modify sync messaging to avoid issue if not active state when behavior shuts down; clean up some spam to FlexBE app console
-* include package name in behavior request (requires latest flexbe_app) to allow duplicate behavior names in packages
 
 2.2.0 (2023-06-29)
 ------------------

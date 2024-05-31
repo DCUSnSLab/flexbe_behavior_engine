@@ -1,6 +1,17 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+2.3.5 (2024-05-31)
+------------------
+* update change log
+
+2.3.4 (2024-05-01)
+------------------
+* add input_action_server with UI and update handling inside input_state (*Significant*)
+* update CMakeLists cmake_minimum_version
+* Updates to dependencies for ROS build farm
+
 2.3.3 (2023-08-09)
 ------------------
 
@@ -16,19 +27,9 @@ Changelog for package flexbe_msgs
 * update CMakeLists cmake_minimum_version
 * Updates to dependencies for ROS build farm
 
-2.3.4 (2024-05-01)
-------------------
-* 2.3.3
-* 2.3.2
-* 2.3.1
-* 2.3.0
-* add input_action_server with UI and update handling inside input_state (*Significant*)
-* update CMakeLists cmake_minimum_version
-* Updates to dependencies for ROS build farm
-
 2.2.0 (2023-06-29)
 ------------------
-* Add comments and modify BehaviorSelection message to use 
+* Add comments and modify BehaviorSelection message to use
   behavior_key and behavior_id for consistency with other messages
 * update package information
 * Merge team-vigir PR165 user data service
