@@ -134,10 +134,10 @@ class FlexbeOnboard(Node):
         vui = FlexbeOnboard._parse_version(msg.data)
         vex = FlexbeOnboard._parse_version(MIN_UI_VERSION)
         if vui < vex:
-            Logger.logwarn('FlexBE App needs to be updated!\n'
+            Logger.logwarn('FlexBE UI needs to be updated!\n'
                            f'Onboard Behavior Engine requires at least version {MIN_UI_VERSION}, '
                            f' but you have {msg.data}\n'
-                           'Please update the flexbe_app software.')
+                           'Please update the FlexBE UI software.')
 
     @staticmethod
     def _parse_version(v):

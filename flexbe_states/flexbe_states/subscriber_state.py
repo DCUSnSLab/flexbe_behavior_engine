@@ -39,17 +39,17 @@ class SubscriberState(EventState):
     """
     Gets the latest message on the given topic and stores it to userdata.
 
-    -- topic 		string		The topic on which should be listened.
-    -- msg_type 	type		The type of messages of this topic.
-    -- blocking 	bool 		Blocks until a message is received.
-    -- clear 		bool 		Drops last message on this topic on enter
+    -- topic        string      The topic on which should be listened.
+    -- msg_type     type        The type of messages of this topic.
+    -- blocking     bool        Blocks until a message is received.
+    -- clear        bool        Drops last message on this topic on enter
                                 in order to only handle message received since this state is active.
-    -- qos  		QoSProfile  A QoSProfile to apply to the subscription.
+    -- qos          QoSProfile  A QoSProfile to apply to the subscription.
 
-    #> message		object		Latest message on the given topic of the respective type.
+    #> message      object      Latest message on the given topic of the respective type.
 
-    <= received 				Message has been received and stored in userdata or state is not blocking.
-    <= unavailable 				The topic is not available when this state becomes actives.
+    <= received                 Message has been received and stored in userdata or state is not blocking.
+    <= unavailable              The topic is not available when this state becomes actives.
     """
 
     def __init__(self, topic, msg_type="", blocking=True, clear=False, qos=QOS_DEFAULT):

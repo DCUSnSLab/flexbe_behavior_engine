@@ -32,8 +32,8 @@
 """Node to launch FlexBE behaviors."""
 
 from datetime import datetime
+import argparse
 import difflib
-import getopt
 import os
 import sys
 import threading
@@ -46,7 +46,8 @@ from rosidl_runtime_py import get_interface_path
 
 from std_msgs.msg import Int32, String
 
-from flexbe_msgs.msg import BehaviorModification, BehaviorRequest, BehaviorSelection, BEStatus, ContainerStructure
+from flexbe_msgs.msg import BehaviorModification, BehaviorRequest, BehaviorSelection
+from flexbe_msgs.msg import BehaviorSync, BEStatus, ContainerStructure
 
 from flexbe_core import BehaviorLibrary, Logger, MIN_UI_VERSION
 from flexbe_core.core import StateMap
@@ -65,6 +66,8 @@ class BehaviorLauncher(Node):
         self._sub = self.create_subscription(BehaviorRequest, Topics._REQUEST_BEHAVIOR_TOPIC, self._request_callback, 100)
         self._version_sub = self.create_subscription(String, Topics._UI_VERSION_TOPIC, self._version_callback, 1)
         self._status_sub = self.create_subscription(BEStatus, Topics._ONBOARD_STATUS_TOPIC, self._status_callback, 100)
+        self._onboard_heartbeat_sub = self.create_subscription(BehaviorSync, Topics._ONBOARD_HEARTBEAT_TOPIC,
+                                                               self._onboard_heartbeat_callback, 10)
 
         self._pub = self.create_publisher(BehaviorSelection, Topics._START_BEHAVIOR_TOPIC, 100)
         self._status_pub = self.create_publisher(BEStatus, Topics._ONBOARD_STATUS_TOPIC, 100)
@@ -75,6 +78,8 @@ class BehaviorLauncher(Node):
 
         # Require periodic events in case behavior is not connected to allow orderly shutdown
         self._heartbeat_timer = self.create_timer(2.0, self.heartbeat_timer_callback)
+        self._last_onboard_heartbeat = None
+        self._last_heartbeat_msg = None
 
         self.get_logger().info("%d behaviors available, ready for start request." % self._behavior_lib.count_behaviors())
 
@@ -85,6 +90,19 @@ class BehaviorLauncher(Node):
         Guarantee some event triggers wake up so that we can catch Ctrl-C in case where no active messages are available.
         """
         self._heartbeat_pub.publish(Int32(data=self.get_clock().now().seconds_nanoseconds()[0]))
+
+        if self._last_onboard_heartbeat is None:
+            self.get_logger().warn(f"Behavior Launcher has NOT received update from onboard behavior engine!")
+        else:
+            elapsed = self.get_clock().now() - self._last_onboard_heartbeat
+            if elapsed.nanoseconds > 2e9:
+                self.get_logger().warn(f"Behavior Launcher is NOT receiving updates from onboard behavior engine!")
+                self._last_onboard_heartbeat = None
+
+    def _onboard_heartbeat_callback(self, msg):
+        """Record time of last onboard heartbeat."""
+        self._last_onboard_heartbeat = self.get_clock().now()
+        self._last_heartbeat_msg = msg
 
     def _status_callback(self, msg):
         if msg.code in [BEStatus.READY, BEStatus.FINISHED, BEStatus.FAILED, BEStatus.ERROR, BEStatus.RUNNING, BEStatus.STARTED]:
@@ -201,10 +219,10 @@ class BehaviorLauncher(Node):
         vui = BehaviorLauncher._parse_version(msg.data)
         vex = BehaviorLauncher._parse_version(MIN_UI_VERSION)
         if vui < vex:
-            Logger.logwarn('FlexBE App needs to be updated!\n'
+            Logger.logwarn('FlexBE UI needs to be updated!\n'
                            f'Behavior launcher requires at least version {MIN_UI_VERSION}, '
                            f' but you have {msg.data}\n'
-                           'Please update the flexbe_app software.')
+                           'Please update the FlexBE UI software.')
 
     @staticmethod
     def _parse_version(v):
@@ -216,44 +234,42 @@ class BehaviorLauncher(Node):
         return result
 
 
-def usage():
-    print("Usage: Soon...")
+def behavior_launcher_main():
+    """Run behavior launcher."""
+    # Create the argument parser
+    parser = argparse.ArgumentParser(description='Behavior launcher for FlexBE')
 
-
-def behavior_launcher_main(node_args=None):
-    opts = None
-    args = None
+    # Add the non-ROS node arguments to the parser
+    parser.add_argument('-b', '--behavior', type=str, help='Specify the behavior to launch')
+    parser.add_argument('-a', '--autonomy', type=int, default=255, help='Specify the autonomy level')
+    parser.add_argument('-s', '--autostart', action='store_true', help='Automatically start the behavior on heartbeat')
 
     try:
-        print(sys.argv)
         stop_index = len(sys.argv)
         try:
             # Stop processing after --ros-args
             stop_index = next(i for i in range(len(sys.argv)) if sys.argv[i] == "--ros-args")
-        except Exception:  # pylint: disable=W0703
+        except StopIteration:
             pass
-        opts, args = getopt.getopt(sys.argv[1:stop_index], "hb:a:", ["help", "behavior=", "autonomy="])
-    except getopt.GetoptError as exc:
-        usage()
+
+        # Parse known arguments up to stop_index
+        behavior_args = sys.argv[1:stop_index]
+        node_args = sys.argv[stop_index:]
+        args = parser.parse_args(behavior_args)
+
+    except Exception as exc:
+        parser.print_help()
         print(exc)
-        print("Continue after exception ")
+        sys.exit(-1)
 
-    behavior = ""
-    autonomy = 255
+    behavior = args.behavior if args.behavior else ""
+    autonomy = args.autonomy
+    auto_start = args.autostart
 
-    if opts:
-        for opt, arg in opts:
-            if opt in ("-h", "--help"):
-                usage()
-                sys.exit()
-            elif opt in ("-b", "--behavior"):
-                behavior = arg
-            elif opt in ("-a", "--autonomy"):
-                autonomy = int(arg)
-    ignore_args = ['__node', '__log']  # auto-set by roslaunch
+    print(f"Behavior launcher with behavior'{behavior}' autonomy={autonomy} auto_start={auto_start}\n"
+          f"    behavior args='{behavior_args}'\n    node_args='{node_args}'", flush=True)
 
     print("Set up behavior_launcher ROS connections ...", flush=True)
-    node_args = sys.argv[stop_index:]
     rclpy.init(args=node_args,
                signal_handler_options=rclpy.signals.SignalHandlerOptions.NO)  # We will handle shutdown
 
@@ -262,13 +278,42 @@ def behavior_launcher_main(node_args=None):
     executor.add_node(launcher)
 
     if behavior != "":
-        print(f"Set up behavior_launcher with '{behavior}' ...", flush=True)
-        for _ in range(100):
-            # Let stuff get going before launching behavior request
+        Logger.info(f"Set up behavior_launcher to launch '{behavior}' ({auto_start})...")
+        prior_clock = launcher.get_clock().now()
+        while launcher._last_onboard_heartbeat is None:
+            # Wait for confirmation that Onboard Behavior Engine is running
+            # before launching behavior request
+            if (launcher.get_clock().now() - prior_clock).nanoseconds > 2e9:
+                Logger.info(f"Waiting for onboard behavior engine before launching '{behavior}' ...")
+                prior_clock = launcher.get_clock().now()
             executor.spin_once(timeout_sec=0.001)
 
+        while not launcher._ready_event.is_set():
+            # If READY signal not received
+            if launcher._last_heartbeat_msg and auto_start:
+                # After getting heart beat message,
+                # then presume ready if auto_start is set and no behavior is reported active
+                if (launcher._last_heartbeat_msg.behavior_id == 0 and
+                    len(launcher._last_heartbeat_msg.current_state_checksums) == 0):
+                        Logger.info('No behavior is currently active on startup '
+                                                   'so presume ready and start new behavior!')
+                        launcher._ready_event.set()
+                else:
+                    if (launcher.get_clock().now() - prior_clock).nanoseconds > 2e9:
+                        Logger.warning('Cannot launch behavior while prior behavior is active'
+                                                   f' (id={launcher._last_heartbeat_msg.behavior_id} ...')
+                        prior_clock = launcher.get_clock().now()
+            else:
+                # Wait for confirmed ready signal if not autostarting
+                if (launcher.get_clock().now() - prior_clock).nanoseconds > 2e9:
+                    Logger.warning(f"Waiting for onboard behavior engine ready status signal '{behavior}' ...")
+                    prior_clock = launcher.get_clock().now()
+            executor.spin_once(timeout_sec=0.001)
+
+        Logger.info('Prepare behavior launch request for Onboard behavior Engine ...')
+        ignore_args = ['__node', '__log']  # auto-set by roslaunch
         request = BehaviorRequest(behavior_name=behavior, autonomy_level=autonomy)
-        for arg in args:
+        for arg in behavior_args:
             if ':=' not in arg:
                 continue
             key, val = arg.split(':=', 1)
@@ -276,12 +321,12 @@ def behavior_launcher_main(node_args=None):
                 continue
             request.arg_keys.append('/' + key)
             request.arg_values.append(val)
-        print(f"Add callback request for '{behavior}' ...", flush=True)
         executor.spin_once(timeout_sec=0.001)
 
         # Set up a callable as a future task so we don't block before starting to spin
         def initial_request():
             return launcher._request_callback(request)
+        Logger.info(f"Create task to start behavior '{behavior}' ...")
         future = executor.create_task(initial_request)
     else:
         future = None
@@ -289,7 +334,7 @@ def behavior_launcher_main(node_args=None):
     try:
         # Wait for ctrl-c to stop the application
         if future:
-            print("Run initial request of behavior_launcher spinner ...", flush=True)
+            Logger.info("Run initial request of behavior_launcher spinner ...")
             executor.spin_until_future_complete(future, timeout_sec=10.0)
             if future.done():
                 Logger.info("Initial behavior launcher request is sent!")
