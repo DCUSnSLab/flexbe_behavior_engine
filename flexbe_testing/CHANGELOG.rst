@@ -1,10 +1,16 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_testing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.1 (2024-05-31)
+------------------
+
 3.0.0 (2024-05-01)
 ------------------
 * update with state map and changes to concurrent handling
 * allow removing action clients and service callers
+
+2.3.4 (2024-05-01)
+------------------
 
 2.3.3 (2023-08-09)
 ------------------
@@ -19,18 +25,6 @@ Changelog for package flexbe_testing
 
 2.3.0 (2023-07-20)
 ------------------
-* update CMakeLists cmake_minimum_version
-* Updates to dependencies for ROS build farm
-* remove rclpy from CMakeLists.txt
-* remove unnecessary rclcpp depends
-
-2.3.4 (2024-05-01)
-------------------
-* 2.3.3
-* update for change in yaml loading for Iron messages; subscriber state test still not functional
-* 2.3.2
-* 2.3.1
-* 2.3.0
 * update CMakeLists cmake_minimum_version
 * Updates to dependencies for ROS build farm
 * remove rclpy from CMakeLists.txt

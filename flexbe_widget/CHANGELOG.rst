@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_widget
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.1 (2024-05-31)
+------------------
+* add argument to allow auto launching behavior based on initial heartbeat message (instead of READY signal published every 10 seconds)
+* use onboard heartbeat to trigger launcher; clean up tabs in subscriber state; tweak UI message
+
 3.0.0 (2024-05-01)
 ------------------
 * update with state map and changes to concurrent handling

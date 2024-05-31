@@ -1,6 +1,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_core
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.1 (2024-05-31)
+------------------
+* Add parsing check to handle exceptions in manifest
+
 3.0.0 (2024-05-01)
 ------------------
 * update with state map and changes to concurrent handling
