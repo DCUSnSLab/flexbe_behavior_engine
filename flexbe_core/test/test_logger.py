@@ -33,13 +33,12 @@
 import time
 import unittest
 
-import rclpy
-
-from rclpy.executors import MultiThreadedExecutor
-from flexbe_core import set_node, EventState, OperatableStateMachine
-from flexbe_core.core.exceptions import StateError, StateMachineError, UserDataError
-from flexbe_core.proxy import initialize_proxies, shutdown_proxies
+from flexbe_core import EventState, OperatableStateMachine, set_node
 from flexbe_core.logger import Logger
+from flexbe_core.proxy import initialize_proxies, shutdown_proxies
+
+import rclpy
+from rclpy.executors import MultiThreadedExecutor
 
 
 class TestLogger(unittest.TestCase):
@@ -48,28 +47,31 @@ class TestLogger(unittest.TestCase):
     test = 0
 
     def __init__(self, *args, **kwargs):
+        """Initialize TestLogger instance."""
         super().__init__(*args, **kwargs)
 
     def setUp(self):
+        """Set up the test."""
         TestLogger.test += 1
         self.context = rclpy.context.Context()
         rclpy.init(context=self.context)
 
         self.executor = MultiThreadedExecutor(context=self.context)
-        self.node = rclpy.create_node("logger_test_" + str(self.test), context=self.context)
-        self.node.get_logger().info(" set up logger test %d (%d) ... " % (self.test, self.context.ok()))
+        self.node = rclpy.create_node('logger_test_' + str(self.test), context=self.context)
+        self.node.get_logger().info(' set up logger test %d (%d) ... ' % (self.test, self.context.ok()))
         self.executor.add_node(self.node)
         initialize_proxies(self.node)
 
     def tearDown(self):
-        self.node.get_logger().info(" shutting down logger test %d (%d) ... " % (self.test, self.context.ok()))
+        """Tear down the test."""
+        self.node.get_logger().info(' shutting down logger test %d (%d) ... ' % (self.test, self.context.ok()))
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
 
-        self.node.get_logger().info("    shutting down proxies in logger test %d ... " % (self.test))
+        self.node.get_logger().info('    shutting down proxies in logger test %d ... ' % (self.test))
         shutdown_proxies()
         time.sleep(0.1)
 
-        self.node.get_logger().info("    destroy node in core test %d ... " % (self.test))
+        self.node.get_logger().info('    destroy node in core test %d ... ' % (self.test))
         self.node.destroy_node()
 
         time.sleep(0.1)
@@ -81,9 +83,10 @@ class TestLogger(unittest.TestCase):
         time.sleep(0.2)
 
     def test_throttle_logger_one(self):
-        self.node.get_logger().info("test_throttle_logger_one ...")
-        self.node.declare_parameter("max_throttle_logging_size", 100)
-        self.node.declare_parameter("throttle_logging_clear_ratio", 0.25)
+        """Test throttle logger one."""
+        self.node.get_logger().info('test_throttle_logger_one ...')
+        self.node.declare_parameter('max_throttle_logging_size', 100)
+        self.node.declare_parameter('throttle_logging_clear_ratio', 0.25)
         set_node(self.node)  # Update the logger node
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
@@ -97,10 +100,10 @@ class TestLogger(unittest.TestCase):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
                 self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
-                Logger.logerr_throttle(0.0, "test")
+                Logger.logerr_throttle(0.0, 'test')
 
             def execute(self, userdata):
-                Logger.logerr_throttle(0.0, "test")
+                Logger.logerr_throttle(0.0, 'test')
                 self._trials -= 1
                 if self._trials == 0:
                     return 'done'
@@ -116,16 +119,17 @@ class TestLogger(unittest.TestCase):
         while outcome is None:
             outcome = sm.execute(None)
             self.assertEqual(len(Logger._last_logged), 1)
-        self.assertEqual(outcome, "done")
+        self.assertEqual(outcome, 'done')
         self.assertEqual(state_instance._trials, 0)
 
         self.assertIsNone(sm._last_exception)
-        self.node.get_logger().info("test_throttle_logger_one  - OK! ")
+        self.node.get_logger().info('test_throttle_logger_one  - OK! ')
 
     def test_throttle_logger_err_multi(self):
-        self.node.get_logger().info("test_throttle_logger_err_multi ...")
-        self.node.declare_parameter("max_throttle_logging_size", 200)
-        self.node.declare_parameter("throttle_logging_clear_ratio", 0.35)
+        """Test throttle logger with errrors."""
+        self.node.get_logger().info('test_throttle_logger_err_multi ...')
+        self.node.declare_parameter('max_throttle_logging_size', 200)
+        self.node.declare_parameter('throttle_logging_clear_ratio', 0.35)
         set_node(self.node)  # Update the logger node
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
@@ -139,10 +143,10 @@ class TestLogger(unittest.TestCase):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
                 self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
-                Logger.logerr_throttle(0.01, f"0_test")
+                Logger.logerr_throttle(0.01, '0_test')
 
             def execute(self, userdata):
-                Logger.logerr_throttle(0.01, f"{self._trials}_test")
+                Logger.logerr_throttle(0.01, f'{self._trials}_test')
                 self._trials -= 1
                 if self._trials == 0:
                     return 'done'
@@ -158,16 +162,17 @@ class TestLogger(unittest.TestCase):
         while outcome is None:
             outcome = sm.execute(None)
             self.assertTrue(1 < len(Logger._last_logged) <= Logger.MAX_LAST_LOGGED_SIZE)
-        self.assertEqual(outcome, "done")
+        self.assertEqual(outcome, 'done')
         self.assertEqual(state_instance._trials, 0)
 
         self.assertIsNone(sm._last_exception)
-        self.node.get_logger().info("test_throttle_logger_err_multi  - OK! ")
+        self.node.get_logger().info('test_throttle_logger_err_multi  - OK! ')
 
     def test_throttle_logger_multiple_params(self):
-        self.node.get_logger().info("test_throttle_logger_multiple_params ...")
-        self.node.declare_parameter("max_throttle_logging_size", 100)
-        self.node.declare_parameter("throttle_logging_clear_ratio", 0.7)
+        """Test throttle logger with multiple params."""
+        self.node.get_logger().info('test_throttle_logger_multiple_params ...')
+        self.node.declare_parameter('max_throttle_logging_size', 100)
+        self.node.declare_parameter('throttle_logging_clear_ratio', 0.7)
 
         set_node(self.node)  # Update the logger node
 
@@ -182,14 +187,14 @@ class TestLogger(unittest.TestCase):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
                 self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
-                Logger.logerr_throttle(0.01, f"0_test")
+                Logger.logerr_throttle(0.01, '0_test')
 
             def execute(self, userdata):
-                Logger.logerr(f"{self._trials}_test")
-                Logger.logerr_throttle(0.0, f"{self._trials}_test")
-                Logger.logwarn_throttle(0.0, f"{self._trials}_test")
-                Logger.loginfo_throttle(0.0, f"{self._trials}_test")
-                Logger.loghint_throttle(0.0, f"{self._trials}_test")
+                Logger.logerr(f'{self._trials}_test')
+                Logger.logerr_throttle(0.0, f'{self._trials}_test')
+                Logger.logwarn_throttle(0.0, f'{self._trials}_test')
+                Logger.loginfo_throttle(0.0, f'{self._trials}_test')
+                Logger.loghint_throttle(0.0, f'{self._trials}_test')
                 self._trials -= 1
                 if self._trials == 0:
                     return 'done'
@@ -206,16 +211,17 @@ class TestLogger(unittest.TestCase):
             outcome = sm.execute(None)
             self.assertTrue(1 < len(Logger._last_logged) <= Logger.MAX_LAST_LOGGED_SIZE)
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.001)
-        self.assertEqual(outcome, "done")
+        self.assertEqual(outcome, 'done')
         self.assertEqual(state_instance._trials, 0)
 
         self.assertIsNone(sm._last_exception)
-        self.node.get_logger().info("test_throttle_logger_multiple  - OK! ")
+        self.node.get_logger().info('test_throttle_logger_multiple  - OK! ')
 
     def test_throttle_logger_multiple(self):
-        self.node.get_logger().info("test_throttle_logger_multiple_params ...")
-        self.node.declare_parameter("max_throttle_logging_size", 120)
-        self.node.declare_parameter("throttle_logging_clear_ratio", 0.22)
+        """Test throttle logger multiple."""
+        self.node.get_logger().info('test_throttle_logger_multiple_params ...')
+        self.node.declare_parameter('max_throttle_logging_size', 120)
+        self.node.declare_parameter('throttle_logging_clear_ratio', 0.22)
         set_node(self.node)  # Update the logger node
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
@@ -229,14 +235,14 @@ class TestLogger(unittest.TestCase):
                 self.initialize_ros(node)
                 super().__init__(outcomes=['done'])
                 self._trials = Logger.MAX_LAST_LOGGED_SIZE * 2
-                Logger.logerr_throttle(0.01, f"0_test")
+                Logger.logerr_throttle(0.01, '0_test')
 
             def execute(self, userdata):
-                Logger.logerr(f"{self._trials}_test")
-                Logger.logerr_throttle(0.0, f"{self._trials}_test")
-                Logger.logwarn_throttle(0.0, f"{self._trials}_test")
-                Logger.loginfo_throttle(0.0, f"{self._trials}_test")
-                Logger.loghint_throttle(0.0, f"{self._trials}_test")
+                Logger.logerr(f'{self._trials}_test')
+                Logger.logerr_throttle(0.0, f'{self._trials}_test')
+                Logger.logwarn_throttle(0.0, f'{self._trials}_test')
+                Logger.loginfo_throttle(0.0, f'{self._trials}_test')
+                Logger.loghint_throttle(0.0, f'{self._trials}_test')
                 self._trials -= 1
                 if self._trials == 0:
                     return 'done'
@@ -253,11 +259,11 @@ class TestLogger(unittest.TestCase):
             outcome = sm.execute(None)
             self.assertTrue(1 < len(Logger._last_logged) <= Logger.MAX_LAST_LOGGED_SIZE)
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.001)
-        self.assertEqual(outcome, "done")
+        self.assertEqual(outcome, 'done')
         self.assertEqual(state_instance._trials, 0)
 
         self.assertIsNone(sm._last_exception)
-        self.node.get_logger().info("test_throttle_logger_multiple_params  - OK! ")
+        self.node.get_logger().info('test_throttle_logger_multiple_params  - OK! ')
 
 
 if __name__ == '__main__':

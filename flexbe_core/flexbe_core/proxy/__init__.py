@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Initialize of the flexbe_core.proxy module."""
+"""Initialize of the flexbe_core.proxy package."""
 
 from .proxy_action_client import ProxyActionClient  # noqa: F401
 from .proxy_publisher import ProxyPublisher  # noqa: F401

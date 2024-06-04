@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,6 @@
 
 
 """WaitState."""
-
 from flexbe_core import EventState
 
 
@@ -38,16 +37,18 @@ class WaitState(EventState):
     """
     Implements a state that can be used to wait on timed process.
 
-    -- wait_time 	float	Amount of time to wait in seconds.
+    -- wait_time  float    Amount of time to wait in seconds.
 
-    <= done					Indicates that the wait time has elapsed.
+    <= done                Indicates that the wait time has elapsed.
     """
 
     def __init__(self, wait_time):
+        """Initialize the WaitState."""
         super(WaitState, self).__init__(outcomes=['done'])
         self._wait = wait_time
 
     def execute(self, userdata):
+        """Execute the WaitState and return after time elapses."""
         elapsed = WaitState._node.get_clock().now() - self._start_time
         if elapsed.nanoseconds * 10 ** -9 > self._wait:
             return 'done'
@@ -55,5 +56,5 @@ class WaitState(EventState):
         return None
 
     def on_enter(self, userdata):
-        """Upon entering the state, save the current time and start waiting."""
+        """Upon entering the WaitState, save the current time."""
         self._start_time = WaitState._node.get_clock().now()

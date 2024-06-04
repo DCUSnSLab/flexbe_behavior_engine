@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -36,7 +36,6 @@ It synchronizes its current state with the mirror and supports some control mech
 """
 from flexbe_core.core.event_state import EventState
 from flexbe_core.core.lockable_state_machine import LockableStateMachine
-from flexbe_core.core.operatable_state import OperatableState
 from flexbe_core.core.operatable_state_machine import OperatableStateMachine
 from flexbe_core.core.priority_container import PriorityContainer
 from flexbe_core.core.topics import Topics
@@ -65,7 +64,7 @@ class ConcurrencyContainer(OperatableStateMachine):
     @property
     def sleep_duration(self):
         """Sleep duration in seconds."""
-        sleep_dur = float("inf")
+        sleep_dur = float('inf')
         for state in self._states:
             sleep_dur = min(sleep_dur, state.sleep_duration)
 
@@ -82,23 +81,25 @@ class ConcurrencyContainer(OperatableStateMachine):
         return self.name
 
     def get_required_autonomy(self, outcome, state):
+        """Return required autonomy level for this outcome."""
         try:
             assert state in self._current_state, "get required autonomy in ConcurrencyContainer - state doesn't match!"
             return self._autonomy[state.name][outcome]
         except Exception as exc:
             Logger.error(f"Failure to retrieve autonomy for '{self.name}' in CC - "
                          f"  current state label='{self.name}' state='{state.name}' outcome='{outcome}'.")
-            Logger.localerr(f"{type(exc)} - {exc}\n\n {self._current_state}")
-            Logger.localerr(f"{self._autonomy}")
+            Logger.localerr(f'{type(exc)} - {exc}\n\n {self._current_state}')
+            Logger.localerr(f'{self._autonomy}')
 
     def _execute_current_state(self):
+        """Execute the current states within this concurrency container."""
         # execute all states that are done with sleeping and determine next sleep duration
         self._inner_sync_request = False  # clear prior request for lower level state
         self._current_state = []  # Concurrency container has multiple active states so use list
 
         self._manual_transition_requested = None
-        # Logger.localinfo(f"-concurrency container {self.name} is_controlled={self._is_controlled}"
-        #                  f"  has transition request={self._sub.has_buffered(Topics._CMD_TRANSITION_TOPIC)}")
+        # Logger.localinfo(f"-concurrency container '{self.name}' is_controlled={self._is_controlled}"
+        #                  f'  has transition request={self._sub.has_buffered(Topics._CMD_TRANSITION_TOPIC)}')
         if self._is_controlled and self._sub.has_buffered(Topics._CMD_TRANSITION_TOPIC):
             # Special handling in concurrency container - can be either CC or one of several internal states.
             command_msg = self._sub.get_from_buffer(Topics._CMD_TRANSITION_TOPIC)
@@ -108,18 +109,20 @@ class ConcurrencyContainer(OperatableStateMachine):
                 outcome = self.outcomes[command_msg.outcome]
                 self._manual_transition_requested = outcome
                 self._pub.publish(Topics._CMD_FEEDBACK_TOPIC,
-                                  CommandFeedback(command="transition",
+                                  CommandFeedback(command='transition',
                                                   args=[command_msg.target, self.name]))
-                Logger.localwarn(f"--> Manually triggered outcome {outcome} of concurrency container {self.name}")
+                Logger.localwarn(f"--> Manually triggered outcome {outcome} of concurrency container '{self.name}'")
                 self.on_exit(self.userdata,
                              states=[s for s in self._states if (s.name not in self._returned_outcomes
-                                                                 or self._returned_outcomes[s.name] is None)])
+                                                                 or self._returned_outcomes[s.name] is None)
+                                     ]
+                             )
                 self._returned_outcomes = {}
                 self._current_state = None
                 self._last_outcome = outcome
                 return outcome
             else:
-                Logger.localinfo(f"concurrency container {self.name} ")
+                Logger.localinfo(f"concurrency container '{self.name}' ")
                 self._manual_transition_requested = command_msg
 
         for state in self._states:
@@ -145,14 +148,14 @@ class ConcurrencyContainer(OperatableStateMachine):
                     state._publish_outcome(outcome)
 
                     self._pub.publish(Topics._CMD_FEEDBACK_TOPIC,
-                                      CommandFeedback(command="transition",
+                                      CommandFeedback(command='transition',
                                                       args=[command_msg.target, state.name]))
-                    Logger.localerr(f"--> Manually triggered outcome {outcome} ({command_msg.outcome}) "
-                                    f"of state {state.name} from inside concurrency {self.name}")
+                    Logger.localerr(f'--> Manually triggered outcome {outcome} ({command_msg.outcome}) '
+                                    f"of state '{state.name}' from inside concurrency {self.name}")
                     continue
                 else:
-                    Logger.localerr(f"--> Invalid outcome {command_msg.outcome} request for state {state.name} "
-                                    f"from inside concurrency {self.name}\n{state.outcomes}")
+                    Logger.localerr(f"--> Invalid outcome {command_msg.outcome} request for state '{state.name}' "
+                                    f"from inside concurrency '{self.name}'\n{state.outcomes}")
 
             if (PriorityContainer.active_container is not None
                 and not all(a == s for a, s in zip(PriorityContainer.active_container.split('/'),
@@ -219,7 +222,7 @@ class ConcurrencyContainer(OperatableStateMachine):
                     self._pub.publish(Topics._OUTCOME_REQUEST_TOPIC,
                                       OutcomeRequest(outcome=self.outcomes.index(outcome),
                                                      target=self.path))
-                    Logger.localinfo("<-- Want result: %s > %s" % (self.name, outcome))
+                    Logger.localinfo('<-- Want result: %s > %s' % (self.name, outcome))
                     StateLogger.log('flexbe.operator', self, type='request', request=outcome,
                                     autonomy=self.parent.autonomy_level,
                                     required=self.parent.get_required_autonomy(outcome, self))
@@ -235,6 +238,7 @@ class ConcurrencyContainer(OperatableStateMachine):
         return outcome
 
     def _execute_single_state(self, state, force_exit=False):
+        """Execute the next state in concurrent container."""
         result = None
         try:
             with UserData(reference=self._userdata, remap=self._remappings[state.name],
@@ -250,11 +254,12 @@ class ConcurrencyContainer(OperatableStateMachine):
             self._last_exception = exc
             Logger.logerr('ConcurrencyContainer: Failed to execute state %s:\n%s' % (self.current_state_label, str(exc)))
             import traceback  # pylint: disable=C0415
-            Logger.localinfo(traceback.format_exc().replace("%", "%%"))
+            Logger.localinfo(traceback.format_exc().replace('%', '%%'))
 
         return result
 
     def on_enter(self, userdata):  # pylint: disable=W0613
+        """Call on entering the concurrency container."""
         super().on_enter(userdata)
         for state in self._states:
             # Force on_enter at state level (userdata passed by _execute_single_state)
@@ -262,6 +267,7 @@ class ConcurrencyContainer(OperatableStateMachine):
             state._last_execution = None
 
     def on_exit(self, userdata, states=None):
+        """Call when concurrency container exits."""
         for state in self._states if states is None else states:
             if state in self._returned_outcomes:
                 continue  # skip states that already exited themselves
@@ -289,8 +295,8 @@ class ConcurrencyContainer(OperatableStateMachine):
             # Logger.localinfo(f"Concurrent get_deep_states: {self.name} {[state.path for state in deep_states]}")
             return deep_states
         elif self._current_state is not None:
-            Logger.localerr(f"ConcurrentContainer.get_deep_states {self.name} - current state is NOT a list!")
-            raise TypeError(f"ConcurrentContainer.get_deep_states {self.name} - current state is NOT a list!")
+            Logger.localerr(f"ConcurrentContainer.get_deep_states '{self.name}' - current state is NOT a list!")
+            raise TypeError(f"ConcurrentContainer.get_deep_states '{self.name}' - current state is NOT a list!")
         # Otherwise, either haven't fully entered, or all have returned outcomes
 
         return deep_states

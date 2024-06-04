@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,7 @@ from flexbe_core import EventState
 
 
 class TestAddState(EventState):
+    """TestAddState."""
 
     def __init__(self, first_arg):
         """Construct instance."""
@@ -42,5 +43,6 @@ class TestAddState(EventState):
         self._first_arg = first_arg
 
     def execute(self, userdata):
+        """Execute the TestAddState."""
         userdata.output_value = userdata.second_arg.data + self._first_arg
         return 'done'

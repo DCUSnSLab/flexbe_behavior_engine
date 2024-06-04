@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,14 +31,17 @@
 
 import os
 import sys
+
 import launch
+
 import launch_testing.actions
+
 import pytest
 
 
 @pytest.mark.rostest
 def generate_test_description():
-
+    """Generate test description for flexbe_onboard_test."""
     path_to_test = os.path.dirname(__file__)
 
     TEST_PROC_PATH = os.path.join(path_to_test, 'test_onboard.py')

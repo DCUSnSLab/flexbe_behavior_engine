@@ -1,6 +1,6 @@
 #!/user/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,6 +31,7 @@
 
 """UserData Class."""
 from copy import deepcopy
+
 from flexbe_core.core.exceptions import UserDataError
 
 
@@ -38,6 +39,7 @@ class UserData:
     """UserData Class."""
 
     def __init__(self, reference=None, input_keys=None, output_keys=None, remap=None):
+        """Initialize UserData instance."""
         self._data = {}
         self._reference = reference if reference is not None else {}
         self._input_keys = input_keys
@@ -72,7 +74,7 @@ class UserData:
         if self._output_keys is not None and key not in self._output_keys:
             self._data[key] = value
             self._hashes[key] = hash(repr(value))
-            if getattr(value.__class__, "_has_header", False):
+            if getattr(value.__class__, '_has_header', False):
                 # This is specific to rospy: If the value here is a message and has a header,
                 #   it will automatically be modified during publishing by rospy.
                 #   So to avoid hash issues, we need to return a copy.
@@ -115,6 +117,7 @@ class UserData:
         self[key] = value
 
     def __call__(self, reference=None, add_from=None, update_from=None, remove_key=None):
+        """Call user data."""
         self._reference = reference if reference is not None else self._reference
         if isinstance(add_from, UserData):
             for key, value in add_from._data.items():
@@ -127,14 +130,16 @@ class UserData:
             del self._data[remove_key]
 
     def __len__(self):
+        """Get total length of data and references."""
         return len(self._data) + len(self._reference)
 
     def __str__(self):
+        """Return string representing mapped user data."""
         if isinstance(self._reference, UserData):
             data_str = '\n  '.join(str(self._reference).split('\n'))
         else:
             data_str = str(self._reference)
-        return ("UserData object with %d data entries:\n"
-                "  Input Keys: %s\n  Output Keys: %s\n  Data: %s\n  Remapping: %s\n  Reference: %s"
+        return ('UserData object with %d data entries:\n'
+                '  Input Keys: %s\n  Output Keys: %s\n  Data: %s\n  Remapping: %s\n  Reference: %s'
                 % (len(self), str(self._input_keys), str(self._output_keys), str(self._data),
                    str(self._remap), data_str))

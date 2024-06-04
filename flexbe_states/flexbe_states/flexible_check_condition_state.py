@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -62,23 +62,25 @@ class FlexibleCheckConditionState(EventState):
         if callable(predicate):
             self._predicate = predicate
         elif isinstance(predicate, str):
-            if "__" in predicate:
+            if '__' in predicate:
                 Logger.logwarn(f"potentially unsafe code in predicate '{predicate}' - use caution if executing!")
             try:
                 self._predicate = eval(predicate)  # Assumes behavior is from a trusted source!
             except Exception as exc:  # pylint: disable=W0703
-                Logger.logwarn(f"Failed to convert predicate to callable function!\n  {str(exc)}")
+                Logger.logwarn(f'Failed to convert predicate to callable function!\n  {str(exc)}')
 
         self._outcome = 'false'
 
     def execute(self, userdata):
+        """Execute the state."""
         return self._outcome
 
     def on_enter(self, userdata):
+        """Call on entering state."""
         if self._predicate is not None:
             try:
-                self._outcome = "true" if self._predicate([userdata[key] for key in self._input_keys]) else 'false'
+                self._outcome = 'true' if self._predicate([userdata[key] for key in self._input_keys]) else 'false'
             except Exception as exc:  # pylint: disable=W0703
-                Logger.logwarn(f"failed to execute condition function!\n  {str(exc)}")
+                Logger.logwarn(f'failed to execute condition function!\n  {str(exc)}')
         else:
             Logger.logwarn('Passed no predicate!')

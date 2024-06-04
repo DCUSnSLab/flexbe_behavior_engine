@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,16 +31,18 @@
 
 import time
 import unittest
-import yaml
-
 from os.path import join
 
 from ament_index_python.packages import get_package_share_directory
 
+from flexbe_core.proxy import initialize_proxies, shutdown_proxies
+
+from flexbe_testing.tester import Tester
+
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
-from flexbe_testing.tester import Tester
-from flexbe_core.proxy import initialize_proxies, shutdown_proxies
+
+import yaml
 
 
 class PyTester(unittest.TestCase):
@@ -68,28 +70,29 @@ class PyTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """Must override to define package and tests folder for each test."""
+        """Override to define package and tests folder for each test."""
         super().setUpClass()
 
         package_dir = get_package_share_directory(PyTester._package)
         PyTester._file_path = join(package_dir, PyTester._tests_folder)
 
     def setUp(self):
-        assert PyTester._package is not None, "Must define setUpClass() for particular test"
-        assert PyTester._file_path is not None, "Must define setUpClass() for particular test"
+        """Set up the tester class."""
+        assert PyTester._package is not None, 'Must define setUpClass() for particular test'
+        assert PyTester._file_path is not None, 'Must define setUpClass() for particular test'
 
-        print("setUp test and initialize ROS ...", flush=True)
+        print('setUp test and initialize ROS ...', flush=True)
         self.context = rclpy.context.Context()
         rclpy.init(context=self.context)
 
         # Set up ROS
         self.executor = MultiThreadedExecutor(context=self.context)
-        self.node = rclpy.create_node(f"flexbe_states_test_{self._test}", context=self.context)
+        self.node = rclpy.create_node(f'flexbe_states_test_{self._test}', context=self.context)
         self.executor.add_node(self.node)
-        self.node.declare_parameter("~print_debug_positive", True)
-        self.node.declare_parameter("~print_debug_negative", True)
-        self.node.declare_parameter("~compact_format", False)
-        self.node.get_logger().info(f"     setUp - rclpy.ok={rclpy.ok(context=self.context)} context={self.context.ok()}")
+        self.node.declare_parameter('~print_debug_positive', True)
+        self.node.declare_parameter('~print_debug_negative', True)
+        self.node.declare_parameter('~compact_format', False)
+        self.node.get_logger().info(f'     setUp - rclpy.ok={rclpy.ok(context=self.context)} context={self.context.ok()}')
 
         initialize_proxies(self.node)
 
@@ -98,16 +101,17 @@ class PyTester(unittest.TestCase):
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.01)
 
     def tearDown(self):
-        self.node.get_logger().info(f" shutting down {PyTester._package} test {self._test} ...")
+        """Tear down the the tester instance."""
+        self.node.get_logger().info(f' shutting down {PyTester._package} test {self._test} ...')
         PyTester._test += 1  # increment for next test
         for i in range(10):
             # Allow any lingering pub/sub to clear up
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.01)
 
-        # self.node.get_logger().info("    shutting down proxies in core test %d ... " % (self._test))
+        # self.node.get_logger().info('    shutting down proxies in core test %d ... ' % (self._test))
         shutdown_proxies()
 
-        # self.node.get_logger().info("    destroy node in core test %d ... " % (self._test))
+        # self.node.get_logger().info('    destroy node in core test %d ... ' % (self._test))
         self.node.destroy_node()
 
         self.executor.shutdown()
@@ -116,31 +120,32 @@ class PyTester(unittest.TestCase):
         rclpy.shutdown(context=self.context)
 
     def run_test(self, test_name, timeout_sec=None, max_cnt=50):
+        """Run test."""
         assert PyTester._file_path is not None
-        filename = join(PyTester._file_path, test_name + ".test")
+        filename = join(PyTester._file_path, test_name + '.test')
 
         try:
-            self.node.get_logger().info(f"  Loading {test_name} from  -->{filename}")
-            self.node.get_logger().info(f"     run_test import rclpy.ok={rclpy.ok(context=self.context)} "
-                                        f"context={self.node.context.ok()}")
+            self.node.get_logger().info(f"  Loading '{test_name}' from  --> '{filename}'")
+            self.node.get_logger().info(f'     run_test import rclpy.ok={rclpy.ok(context=self.context)} '
+                                        f'context={self.node.context.ok()}')
             with open(filename, 'r') as f:
                 config = getattr(yaml, 'unsafe_load', yaml.load)(f)
         except IOError as io_error:
-            self.node.get_logger().error(f"  Exception in {test_name} : {str(io_error)}")
+            self.node.get_logger().error(f"  Exception in '{test_name}' : {str(io_error)}")
             self.fail(str(io_error))  # force failure
         except Exception as exc:
-            self.node.get_logger().error(f"  Exception in {test_name} : {type(exc)} - {str(exc)}")
+            self.node.get_logger().error(f"  Exception in '{test_name}' : {type(exc)} - {str(exc)}")
             self.fail(str(exc))  # force failure
 
-        self.node.get_logger().error(f"Running test for {test_name}\n config: {config} ...")
+        self.node.get_logger().error(f"Running test for '{test_name}'\n config: {config} ...")
         tester = Tester(self.node, self.executor)
         try:
-            self.node.get_logger().info(f"     run_pytest rclpy.ok={rclpy.ok(context=self.context)} "
-                                        f"context={self.node.context.ok()}")
+            self.node.get_logger().info(f'     run_pytest rclpy.ok={rclpy.ok(context=self.context)} '
+                                        f'context={self.node.context.ok()}')
             success = tester.run_pytest(test_name, config, timeout_sec=timeout_sec, max_cnt=max_cnt)
-            self.node.get_logger().error(f"    test for {test_name} success={success}")
+            self.node.get_logger().error(f"    test for '{test_name}' success={success}")
         except Exception as exc:  # pylint: disable=W0703
-            self.node.get_logger().error(f"Exception in test for {test_name}\n  {exc}")
+            self.node.get_logger().error(f"Exception in test for '{test_name}'\n  {exc}")
             self.fail(str(exc))  # force failure
 
-        self.assertEqual(success, 1, msg=f"{test_name} failed !")
+        self.assertEqual(success, 1, msg=f"Test '{test_name}' failed !")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,9 +28,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
+"""PublisherEmptyState."""
 from flexbe_core import EventState
 from flexbe_core.proxy import ProxyPublisher
+
 from std_msgs.msg import Empty
 
 
@@ -44,12 +45,15 @@ class PublisherEmptyState(EventState):
     """
 
     def __init__(self, topic):
+        """Initialize PublisherEmptyState instance."""
         super(PublisherEmptyState, self).__init__(outcomes=['done'])
         self._topic = topic
         self._pub = ProxyPublisher({self._topic: Empty})
 
     def execute(self, userdata):
+        """Execute the state."""
         return 'done'
 
     def on_enter(self, userdata):
+        """Publish on entering the state."""
         self._pub.publish(self._topic, Empty())

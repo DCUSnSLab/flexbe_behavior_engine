@@ -29,11 +29,13 @@
 
 """A proxy for calling actions provides a single point for all state action interfaces."""
 from functools import partial
-from threading import Timer, Lock
+from threading import Lock, Timer
 
 from action_msgs.msg import GoalStatus
-from rclpy.action import ActionClient
+
 from flexbe_core.logger import Logger
+
+from rclpy.action import ActionClient
 
 
 class ProxyActionClient:
@@ -61,13 +63,13 @@ class ProxyActionClient:
     def shutdown():
         """Shuts this proxy down by resetting all action clients."""
         try:
-            print(f"Shutdown proxy action clients with {len(ProxyActionClient._clients)} topics ...")
+            print(f'Shutdown proxy action clients with {len(ProxyActionClient._clients)} topics ...')
             for topic, client_dict in ProxyActionClient._clients.items():
                 try:
                     ProxyActionClient._clients[topic] = None
                     ProxyActionClient._node.destroy_client(client_dict['client'])
                 except Exception as exc:  # pylint: disable=W0703
-                    Logger.error(f"Something went wrong during shutdown of proxy action client for {topic}!\n{str(exc)}")
+                    Logger.error(f"Something went wrong during shutdown of proxy action client for '{topic}'!\n{str(exc)}")
 
             ProxyActionClient._result.clear()
             ProxyActionClient._result_status.clear()
@@ -95,7 +97,8 @@ class ProxyActionClient:
 
     @classmethod
     def setupClient(cls, topic, action_type, wait_duration=10):
-        Logger.localerr("Deprecated: Use ProxyActionClient.setup_client instead!")
+        """Set up proxy action client (Deprecated)."""
+        Logger.localerr('Deprecated: Use ProxyActionClient.setup_client instead!')
         cls.setup_client(topic, action_type, wait_duration=10)
 
     @classmethod
@@ -124,10 +127,10 @@ class ProxyActionClient:
                             Logger.localinfo(f'Existing action client for {topic}'
                                              f' with same action type name, but different instance -  re-create  client!')
                         else:
-                            Logger.localwarn(f"Existing action client for {topic} "
+                            Logger.localwarn(f"Existing action client for '{topic}' "
                                              f"with {ProxyActionClient._clients[topic]['count']} references\n"
-                                             f"    with same action type name, but different instance\n"
-                                             f"    just re-create client with 1 reference - but be warned!")
+                                             f'    with same action type name, but different instance\n'
+                                             f'    just re-create client with 1 reference - but be warned!')
 
                         # Destroy the existing client in executor thread
                         client = ProxyActionClient._clients[topic]['client']
@@ -137,7 +140,7 @@ class ProxyActionClient:
                                                                                     action_type, topic),
                                                              'count': 1}
                     else:
-                        raise TypeError("Trying to replace existing action client with different action type")
+                        raise TypeError('Trying to replace existing action client with different action type')
                 else:
                     ProxyActionClient._clients[topic]['count'] = ProxyActionClient._clients[topic]['count'] + 1
 
@@ -180,13 +183,13 @@ class ProxyActionClient:
                 # To avoid rclpy TypeErrors, we will automatically convert to the base type
                 # used in the original service/publisher clients
                 new_goal = client._action_type.Goal()
-                Logger.localinfo(f"  converting goal {str(type(new_goal))} vs. {str(type(goal))}")
-                assert new_goal.__slots__ == goal.__slots__, f"Message attributes for {topic} do not match!"
+                Logger.localinfo(f"  converting goal '{str(type(new_goal))}' vs. '{str(type(goal))}'")
+                assert new_goal.__slots__ == goal.__slots__, f"Message attributes for '{topic}' do not match!"
                 for attr in goal.__slots__:
                     setattr(new_goal, attr, getattr(goal, attr))
             else:
-                raise TypeError(f"Invalid goal type {goal.__class__.__name__}"
-                                f" (vs. {ProxyActionClient._clients[topic]._action_type.Goal.__name__}) for topic {topic}")
+                raise TypeError(f"Invalid goal type '{goal.__class__.__name__}'"
+                                f" (vs. '{ProxyActionClient._clients[topic]._action_type.Goal.__name__}') for topic '{topic}'")
         else:
             # Same class definition instance as stored
             new_goal = goal
@@ -417,5 +420,5 @@ class ProxyActionClient:
             del client
             Logger.localinfo(f'Destroyed the proxy action client for {topic}!')
         except Exception as exc:  # pylint: disable=W0703
-            Logger.error("Something went wrong destroying proxy action client"
-                         f" for {topic}!\n  {type(exc)} - {str(exc)}")
+            Logger.error('Something went wrong destroying proxy action client'
+                         f" for '{topic}'!\n  {type(exc)} - {str(exc)}")

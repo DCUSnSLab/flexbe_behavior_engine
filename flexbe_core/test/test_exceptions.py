@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,12 +33,12 @@
 import time
 import unittest
 
-import rclpy
-
-from rclpy.executors import MultiThreadedExecutor
 from flexbe_core import EventState, OperatableStateMachine
 from flexbe_core.core.exceptions import StateError, StateMachineError, UserDataError
 from flexbe_core.proxy import initialize_proxies, shutdown_proxies
+
+import rclpy
+from rclpy.executors import MultiThreadedExecutor
 
 
 class TestExceptions(unittest.TestCase):
@@ -47,28 +47,31 @@ class TestExceptions(unittest.TestCase):
     test = 0
 
     def __init__(self, *args, **kwargs):
+        """Initialize TestExceptions instance."""
         super().__init__(*args, **kwargs)
 
     def setUp(self):
+        """Set up the TestExceptions test."""
         TestExceptions.test += 1
         self.context = rclpy.context.Context()
         rclpy.init(context=self.context)
 
         self.executor = MultiThreadedExecutor(context=self.context)
-        self.node = rclpy.create_node("exception_test_" + str(self.test), context=self.context)
-        self.node.get_logger().info(" set up exceptions test %d (%d) ... " % (self.test, self.context.ok()))
+        self.node = rclpy.create_node('exception_test_' + str(self.test), context=self.context)
+        self.node.get_logger().info(' set up exceptions test %d (%d) ... ' % (self.test, self.context.ok()))
         self.executor.add_node(self.node)
         initialize_proxies(self.node)
 
     def tearDown(self):
-        self.node.get_logger().info(" shutting down exceptions test %d (%d) ... " % (self.test, self.context.ok()))
+        """Tear down the TestExceptions test."""
+        self.node.get_logger().info(' shutting down exceptions test %d (%d) ... ' % (self.test, self.context.ok()))
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
 
-        self.node.get_logger().info("    shutting down proxies in core test %d ... " % (self.test))
+        self.node.get_logger().info('    shutting down proxies in core test %d ... ' % (self.test))
         shutdown_proxies()
         time.sleep(0.1)
 
-        self.node.get_logger().info("    destroy node in core test %d ... " % (self.test))
+        self.node.get_logger().info('    destroy node in core test %d ... ' % (self.test))
         self.node.destroy_node()
 
         time.sleep(0.1)
@@ -80,7 +83,8 @@ class TestExceptions(unittest.TestCase):
         time.sleep(0.2)
 
     def test_invalid_outcome(self):
-        self.node.get_logger().info("test_invalid_outcome ...")
+        """Test invalid outcome."""
+        self.node.get_logger().info('test_invalid_outcome ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
         OperatableStateMachine.initialize_ros(self.node)
@@ -103,10 +107,11 @@ class TestExceptions(unittest.TestCase):
         outcome = sm.execute(None)
         self.assertIsNone(outcome)
         self.assertIsInstance(sm._last_exception, StateError)
-        self.node.get_logger().info("test_invalid_outcome  - OK! ")
+        self.node.get_logger().info('test_invalid_outcome  - OK! ')
 
     def test_invalid_transition(self):
-        self.node.get_logger().info("test_invalid_transition ...")
+        """Test invalid transition."""
+        self.node.get_logger().info('test_invalid_transition ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
         OperatableStateMachine.initialize_ros(self.node)
@@ -132,10 +137,11 @@ class TestExceptions(unittest.TestCase):
         outcome = sm.execute(None)
         self.assertIsNone(outcome)
         self.assertIsInstance(sm._last_exception, StateMachineError)
-        self.node.get_logger().info("test_invalid_transition - OK! ")
+        self.node.get_logger().info('test_invalid_transition - OK! ')
 
     def test_invalid_userdata_input(self):
-        self.node.get_logger().info("test_invalid_userdata ...")
+        """Test invalid user data."""
+        self.node.get_logger().info('test_invalid_userdata ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
         OperatableStateMachine.initialize_ros(self.node)
@@ -159,10 +165,11 @@ class TestExceptions(unittest.TestCase):
         outcome = sm.execute(None)
         self.assertIsNone(outcome)
         self.assertIsInstance(sm._last_exception, UserDataError)
-        self.node.get_logger().info("test_invalid_userdata - OK! ")
+        self.node.get_logger().info('test_invalid_userdata - OK! ')
 
     def test_invalid_userdata_output(self):
-        self.node.get_logger().info("test_invalid_userdata_output ...")
+        """Test invalid userdata output."""
+        self.node.get_logger().info('test_invalid_userdata_output ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
         OperatableStateMachine.initialize_ros(self.node)
@@ -186,10 +193,11 @@ class TestExceptions(unittest.TestCase):
         outcome = sm.execute(None)
         self.assertIsNone(outcome)
         self.assertIsInstance(sm._last_exception, UserDataError)
-        self.node.get_logger().info("test_invalid_userdata_output - OK! ")
+        self.node.get_logger().info('test_invalid_userdata_output - OK! ')
 
     def test_missing_userdata(self):
-        self.node.get_logger().info("test_missing_userdata ...")
+        """Test missing userdata."""
+        self.node.get_logger().info('test_missing_userdata ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
         OperatableStateMachine.initialize_ros(self.node)
@@ -213,10 +221,11 @@ class TestExceptions(unittest.TestCase):
         outcome = sm.execute(None)
         self.assertIsNone(outcome)
         self.assertIsInstance(sm._last_exception, UserDataError)
-        self.node.get_logger().info("test_missing_userdata - OK! ")
+        self.node.get_logger().info('test_missing_userdata - OK! ')
 
     def test_modify_input_key(self):
-        self.node.get_logger().info("test_modify_input_key ...! ")
+        """Test modify input key."""
+        self.node.get_logger().info('test_modify_input_key ...! ')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
         OperatableStateMachine.initialize_ros(self.node)
@@ -241,7 +250,7 @@ class TestExceptions(unittest.TestCase):
         outcome = sm.execute(None)
         self.assertIsNone(outcome)
         self.assertIsInstance(sm._last_exception, UserDataError)
-        self.node.get_logger().info("test_modify_input_key - OK! ")
+        self.node.get_logger().info('test_modify_input_key - OK! ')
 
 
 if __name__ == '__main__':

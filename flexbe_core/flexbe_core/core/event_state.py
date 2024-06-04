@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,15 +30,17 @@
 
 
 """EventState."""
-from flexbe_msgs.msg import CommandFeedback
-from std_msgs.msg import Bool, Empty
 
+from flexbe_core.core.operatable_state import OperatableState
 from flexbe_core.core.preemptable_state import PreemptableState
 from flexbe_core.core.priority_container import PriorityContainer
-from flexbe_core.core.operatable_state import OperatableState
 from flexbe_core.core.topics import Topics
 from flexbe_core.logger import Logger
 from flexbe_core.state_logger import StateLogger
+
+from flexbe_msgs.msg import CommandFeedback
+
+from std_msgs.msg import Bool, Empty
 
 
 @StateLogger.log_events('flexbe.events',
@@ -50,6 +52,7 @@ class EventState(OperatableState):
     """A state that allows implementing certain events."""
 
     def __init__(self, *args, **kwargs):
+        """Initialize EventState instance."""
         super().__init__(*args, **kwargs)
 
         self.__execute = self.execute
@@ -66,15 +69,15 @@ class EventState(OperatableState):
             msg = self._sub.get_last_msg(Topics._CMD_PAUSE_TOPIC)
             self._sub.remove_last_msg(Topics._CMD_PAUSE_TOPIC)
             if msg.data:
-                Logger.localinfo("--> Pausing in state %s", self.name)
-                self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command="pause"))
+                Logger.localinfo("--> Pausing in state '%s'", self.name)
+                self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command='pause'))
                 self._last_active_container = PriorityContainer.active_container
                 # claim priority to propagate pause event
                 PriorityContainer.active_container = self.path
                 self._paused = True
             else:
-                Logger.localinfo("--> Resuming in state %s", self.name)
-                self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command="resume"))
+                Logger.localinfo("--> Resuming in state '%s'", self.name)
+                self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command='resume'))
                 PriorityContainer.active_container = self._last_active_container
                 self._last_active_container = None
                 self._paused = False
@@ -97,9 +100,9 @@ class EventState(OperatableState):
 
         repeat = False
         if self._is_controlled and self._sub.has_msg(Topics._CMD_REPEAT_TOPIC):
-            Logger.localinfo("--> Repeating state %s", self.name)
+            Logger.localinfo("--> Repeating state '%s'", self.name)
             self._sub.remove_last_msg(Topics._CMD_REPEAT_TOPIC)
-            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command="repeat"))
+            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command='repeat'))
             repeat = True
 
         if repeat or outcome is not None and not PreemptableState.preempt:

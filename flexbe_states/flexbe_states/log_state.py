@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
+"""LogState."""
 from flexbe_core import EventState, Logger
 
 
@@ -38,10 +38,10 @@ class LogState(EventState):
 
     Can be used to precisely inform the operator about what happened to the behavior.
 
-    -- text  	    string  The message to be logged to the terminal.
-    -- severity     uint8  	Type of logging (Logger.REPORT_INFO / WARN / HINT / ERROR)
+    -- text         string  The message to be logged to the terminal.
+    -- severity     uint8   Type of logging (Logger.REPORT_INFO / WARN / HINT / ERROR)
 
-    <= done				    Indicates that the message has been logged.
+    <= done                 Indicates that the message has been logged.
     """
 
     def __init__(self, text, severity=Logger.REPORT_HINT):
@@ -50,6 +50,7 @@ class LogState(EventState):
         self._severity = severity
 
     def execute(self, userdata):
+        """Execute LogState."""
         # Already logged. No need to wait for anything.
         return 'done'
 

@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,6 +33,7 @@ import xml.etree.ElementTree as ET
 import zlib
 
 from ament_index_python import get_packages_with_prefixes
+
 from catkin_pkg.package import parse_package
 
 from flexbe_core.logger import Logger
@@ -42,6 +43,7 @@ class BehaviorLibrary:
     """Provide access to all known behaviors."""
 
     def __init__(self, node):
+        """Initialize BehaviorLibrary instance."""
         self._node = node
         Logger.initialize(node)
         self.parse_packages()
@@ -49,13 +51,13 @@ class BehaviorLibrary:
 
     def dump_packages(self):
         """Dump to screen for debugging."""
-        print("\n\n------------------ Available Behaviors Workspace (sorted by assigned key) ------------------", flush=True)
+        print('\n\n------------------ Available Behaviors Workspace (sorted by assigned key) ------------------', flush=True)
         sorted_keys = list(self._behavior_lib.keys())
         sorted_keys.sort()
         for be_key in sorted_keys:
             data = self._behavior_lib[be_key]
             print(f"{be_key:10d} : {data['class']:36s} - {data['name']:36s} - {data['file']:30s} - {data['package']}")
-        print("-----------------------------------------------------------------------------------------\n\n", flush=True)
+        print('-----------------------------------------------------------------------------------------\n\n', flush=True)
 
     def parse_packages(self):
         """Parse all ROS2 packages to update the internal behavior library."""
@@ -63,11 +65,11 @@ class BehaviorLibrary:
         for pkg_name, pkg_path in get_packages_with_prefixes().items():
             pkg = parse_package(os.path.join(pkg_path, 'share', pkg_name))
             for export in pkg.exports:
-                if export.tagname == "flexbe_behaviors":
+                if export.tagname == 'flexbe_behaviors':
                     try:
                         self._add_behavior_manifests(os.path.join(pkg_path, 'lib', pkg_name, 'manifest'), pkg_name)
                     except KeyError as exc:
-                        print(f"Error : duplicate behavior name found in {pkg_name} \n  {exc}", flush=True)
+                        print(f"Error : duplicate behavior name found in '{pkg_name}' \n  {exc}", flush=True)
                         raise exc
 
     def _add_behavior_manifests(self, path, pkg=None):
@@ -86,7 +88,7 @@ class BehaviorLibrary:
             entry_path = os.path.join(path, entry)
             if os.path.isdir(entry_path):
                 self._add_behavior_manifests(entry_path, pkg)
-            elif entry.endswith(".xml") and not entry.startswith("#"):
+            elif entry.endswith('.xml') and not entry.startswith('#'):
                 try:
                     mrt = ET.parse(entry_path).getroot()
                 except ET.ParseError as exc:
@@ -95,24 +97,26 @@ class BehaviorLibrary:
                     continue
 
                 # structure sanity check
-                if (mrt.tag != "behavior"
-                        or len(mrt.findall(".//executable")) == 0
-                        or mrt.find("executable").get("package_path") is None
-                        or len(mrt.find("executable").get("package_path").split(".")) < 2):
+                if (
+                    mrt.tag != 'behavior'
+                    or len(mrt.findall('.//executable')) == 0
+                    or mrt.find('executable').get('package_path') is None
+                    or len(mrt.find('executable').get('package_path').split('.')) < 2
+                ):
                     continue
-                exct = mrt.find("executable")
-                if pkg is not None and exct.get("package_path").split(".")[0] != pkg:
+                exct = mrt.find('executable')
+                if pkg is not None and exct.get('package_path').split('.')[0] != pkg:
                     continue  # ignore if manifest not in specified package
-                be_key = zlib.adler32(exct.get("package_path").encode()) & 0x7fffffff
+                be_key = zlib.adler32(exct.get('package_path').encode()) & 0x7fffffff
                 if be_key in self._behavior_lib:
-                    raise KeyError(f"Invalid behavior id key={be_key} for {exct.get('package_path')} "
+                    raise KeyError(f"Invalid behavior id key='{be_key}' for {exct.get('package_path')} "
                                    f"- already exists for {self._behavior_lib[be_key]['package']}")
 
                 self._behavior_lib[be_key] = {
-                    "name": mrt.get("name"),
-                    "package": ".".join(exct.get("package_path").split(".")[:-1]),
-                    "file": exct.get("package_path").split(".")[-1],
-                    "class": exct.get("class")
+                    'name': mrt.get('name'),
+                    'package': '.'.join(exct.get('package_path').split('.')[:-1]),
+                    'file': exct.get('package_path').split('.')[-1],
+                    'class': exct.get('class')
                 }
 
     def get_behavior(self, be_key):
@@ -127,7 +131,7 @@ class BehaviorLibrary:
         try:
             return self._behavior_lib[be_key]
         except KeyError:
-            Logger.logwarn(f"Did not find ID {be_key} in libary, updating...")
+            Logger.logwarn(f"Did not find ID '{be_key}' in libary, updating...")
             self.parse_packages()
             return self._behavior_lib.get(be_key, None)
 
@@ -140,25 +144,25 @@ class BehaviorLibrary:
 
         @return Tuple (be_key, be_entry) corresponding to the name or (None, None) if not found.
         """
-        if "/" in be_identifier:
+        if '/' in be_identifier:
             # Identifier in the form of package/Name
             # where only first slash delineates package
-            be_split = be_identifier.split("/")
-            be_package, be_name = be_split[0], "/".join(be_split[1:])
+            be_split = be_identifier.split('/')
+            be_package, be_name = be_split[0], '/'.join(be_split[1:])
 
             def __find_behavior():
                 return next((id, be) for (id, be)
                             in self._behavior_lib.items()
-                            if be["name"] == be_name and be["package"] == be_package)
+                            if be['name'] == be_name and be['package'] == be_package)
         else:
             # Accept older form of only Name, but this will return the first matching name!
             be_package = None
             be_name = be_identifier
 
             def __find_behavior():
-                return next((id, be) for (id, be)
+                return next((beh_id, be) for (beh_id, be)
                             in self._behavior_lib.items()
-                            if be["name"] == be_name)  # Returns first matching name regardless of package
+                            if be['name'] == be_name)  # Returns first matching name regardless of package
         try:
             return __find_behavior()
         except StopIteration:
@@ -196,7 +200,7 @@ class BehaviorLibrary:
             return None
 
         try:
-            module_path = __import__(be_entry["package"]).__path__[-1]
+            module_path = __import__(be_entry['package']).__path__[-1]
         except ImportError:
             try:
                 # Attempt to replace prior use of ROS 1 package finder
@@ -204,10 +208,10 @@ class BehaviorLibrary:
                                f"""try using 'get_package_share_directory' instead""")
                 from ament_index_python.packages import get_package_share_directory  # pylint: disable=C0415
 
-                module_path = get_package_share_directory(be_entry["package"])
+                module_path = get_package_share_directory(be_entry['package'])
             except Exception as exc:
                 Logger.logerr(f"""Cannot import behavior package '{be_entry["package"]}' """)
                 raise exc
 
-        filename = be_entry["file"] + '.py' if not add_tmp else '_tmp.py'
+        filename = be_entry['file'] + '.py' if not add_tmp else '_tmp.py'
         return os.path.join(module_path, filename)

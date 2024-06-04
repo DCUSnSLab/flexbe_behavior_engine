@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -47,6 +47,7 @@ class State:
     _preempted_name = 'preempted'  # Define name here, but handle logic in derived class
 
     def __init__(self, *args, **kwargs):
+        """Initilize state instance."""
         self._outcomes = _remove_duplicates(kwargs.get('outcomes', []))
         io_keys = kwargs.get('io_keys', [])
         self._input_keys = _remove_duplicates(kwargs.get('input_keys', []) + io_keys)
@@ -59,57 +60,69 @@ class State:
         self._type = 0  # Basic states are type 0, containers have non-zero type
 
     def __str__(self):
+        """Return name of this state."""
         return self._name
 
     def execute(self, userdata):
-        pass
+        """Execute this state."""
 
     @property
     def sleep_duration(self):
+        """Return desired sleep duration."""
         return 0.
 
     @property
     def outcomes(self):
+        """Return possible outcomes."""
         return self._outcomes
 
     @property
     def input_keys(self):
+        """Return input userdata keys."""
         return self._input_keys
 
     @property
     def output_keys(self):
+        """Return output userdata keys."""
         return self._output_keys
 
     # instance properties
 
     @property
     def name(self):
+        """Return state name."""
         return self._name
 
     def set_name(self, value):
+        """Set the name of this state."""
         if self._name is not None:
-            raise StateError("Cannot change the name of a state!")
+            raise StateError('Cannot change the name of a state!')
 
         self._name = value
 
     @property
     def parent(self):
+        """Get parent state."""
         return self._parent
 
     def set_parent(self, value):
+        """Set parent of this state."""
         if self._parent is not None:
-            raise StateError("Cannot change the parent of a state!")
+            raise StateError('Cannot change the parent of a state!')
 
         self._parent = value
 
     @property
     def state_id(self):
+        """Return state id (hash code)."""
         return self._state_id
 
     @property
     def path(self):
-        return "" if self.parent is None else self.parent.path + "/" + self.name
+        """Return path from root state machine."""
+        return '' if self.parent is None else self.parent.path + '/' + self.name
 
     @property
     def type(self):
+        """Return state type."""
         return self._type

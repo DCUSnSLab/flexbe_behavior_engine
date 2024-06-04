@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -34,17 +34,20 @@
 import time
 import unittest
 
+from action_msgs.msg import GoalStatus
+
+from flexbe_core.proxy import ProxyActionClient, ProxyPublisher, ProxyServiceCaller, ProxySubscriberCached
+from flexbe_core.proxy import initialize_proxies, shutdown_proxies
+
+from flexbe_msgs.action import BehaviorExecution
+
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.executors import MultiThreadedExecutor
 
-from action_msgs.msg import GoalStatus
 from std_msgs.msg import String
-from std_srvs.srv import Trigger
-from flexbe_msgs.action import BehaviorExecution
 
-from flexbe_core.proxy import ProxyPublisher, ProxySubscriberCached, ProxyActionClient, ProxyServiceCaller
-from flexbe_core.proxy import initialize_proxies, shutdown_proxies
+from std_srvs.srv import Trigger
 
 
 class TestProxies(unittest.TestCase):
@@ -53,30 +56,33 @@ class TestProxies(unittest.TestCase):
     test = 0
 
     def __init__(self, *args, **kwargs):
+        """Initialize TestProxies instance."""
         super().__init__(*args, **kwargs)
 
     def setUp(self):
+        """Set up the test."""
         TestProxies.test += 1
 
         self.context = rclpy.context.Context()
         rclpy.init(context=self.context)
 
         self.executor = MultiThreadedExecutor(context=self.context)
-        self.node = rclpy.create_node("proxy_test" + str(self.test), context=self.context)
+        self.node = rclpy.create_node('proxy_test' + str(self.test), context=self.context)
         self.executor.add_node(self.node)
 
-        self.node.get_logger().info(" set up proxies test %d (%d) ... " % (self.test, self.context.ok()))
+        self.node.get_logger().info(' set up proxies test %d (%d) ... ' % (self.test, self.context.ok()))
         initialize_proxies(self.node)
 
     def tearDown(self):
-        self.node.get_logger().info(" shutting down proxies test %d (%d) ... " % (self.test, self.context.ok()))
+        """Tear down the test."""
+        self.node.get_logger().info(' shutting down proxies test %d (%d) ... ' % (self.test, self.context.ok()))
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
 
-        self.node.get_logger().info("    shutting down proxies in core test %d ... " % (self.test))
+        self.node.get_logger().info('    shutting down proxies in core test %d ... ' % (self.test))
         shutdown_proxies()
         time.sleep(0.1)
 
-        self.node.get_logger().info("    destroy node in core test %d ... " % (self.test))
+        self.node.get_logger().info('    destroy node in core test %d ... ' % (self.test))
         self.node.destroy_node()
         time.sleep(0.1)
 
@@ -88,7 +94,8 @@ class TestProxies(unittest.TestCase):
         time.sleep(0.5)
 
     def test_publish_subscribe(self):
-        self.node.get_logger().info("test_publish_subscribe ...")
+        """Test publish and subscribe."""
+        self.node.get_logger().info('test_publish_subscribe ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=1)
         ProxyPublisher.initialize(self.node)
@@ -97,13 +104,13 @@ class TestProxies(unittest.TestCase):
         topic1 = '/pubsub_1'
         topic2 = '/pubsub_2'
 
-        self.node.get_logger().info("test_publish_subscribe - define publishers ...")
+        self.node.get_logger().info('test_publish_subscribe - define publishers ...')
         pub = ProxyPublisher({topic1: String})
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
         pub = ProxyPublisher({topic2: String})
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
 
-        self.node.get_logger().info("  subscribe topic1 only ...")
+        self.node.get_logger().info('  subscribe topic1 only ...')
 
         sub = ProxySubscriberCached({topic1: String}, inst_id=id(self))
 
@@ -120,11 +127,11 @@ class TestProxies(unittest.TestCase):
         self.assertTrue(pub.number_of_subscribers(topic1) > 0)
         self.assertFalse(pub.number_of_subscribers(topic2) > 0)
 
-        self.node.get_logger().info("  both available ...")
+        self.node.get_logger().info('  both available ...')
         self.assertTrue(pub.is_available(topic1))
         self.assertTrue(pub.is_available(topic2))
 
-        self.node.get_logger().info("  subscribe topic2 ...")
+        self.node.get_logger().info('  subscribe topic2 ...')
         sub = ProxySubscriberCached({topic2: String}, inst_id=id(self))
         for _ in range(50):
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.01)
@@ -133,11 +140,11 @@ class TestProxies(unittest.TestCase):
         self.assertTrue(pub.number_of_subscribers(topic1) > 0)
         self.assertTrue(pub.number_of_subscribers(topic2) > 0)
 
-        self.node.get_logger().info("  found both subscribers ...")
+        self.node.get_logger().info('  found both subscribers ...')
         self.assertTrue(pub.is_available(topic1))
         self.assertTrue(pub.is_available(topic2))
 
-        self.node.get_logger().info("  publish two messages ...")
+        self.node.get_logger().info('  publish two messages ...')
         msg1 = String()
         msg1.data = '1'
         msg2 = String()
@@ -147,7 +154,7 @@ class TestProxies(unittest.TestCase):
         pub.publish(topic2, msg2)
 
         # Make sure messages are sent before checking subscription
-        self.node.get_logger().info("  listen for two messages ...")
+        self.node.get_logger().info('  listen for two messages ...')
         end_time = time.time() + 5
         while time.time() < end_time:
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
@@ -155,18 +162,19 @@ class TestProxies(unittest.TestCase):
         self.assertTrue(sub.has_msg(topic1))
         self.assertEqual(sub.get_last_msg(topic1).data, '1')
         sub.remove_last_msg(topic1)
-        self.node.get_logger().info("  received on topic1...")
+        self.node.get_logger().info('  received on topic1...')
 
         self.assertFalse(sub.has_msg(topic1))
         self.assertIsNone(sub.get_last_msg(topic1))
 
-        self.node.get_logger().info("  check for topic2 ...")
+        self.node.get_logger().info('  check for topic2 ...')
         self.assertTrue(sub.has_msg(topic2))
         self.assertEqual(sub.get_last_msg(topic2).data, '2')
-        self.node.get_logger().info("test_publish_subscribe - OK!")
+        self.node.get_logger().info('test_publish_subscribe - OK!')
 
     def test_subscribe_buffer(self):
-        self.node.get_logger().info("test_subscribe_buffer ...")
+        """Test subscribe buffer."""
+        self.node.get_logger().info('test_subscribe_buffer ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=2)
         ProxyPublisher.initialize(self.node)
@@ -213,10 +221,11 @@ class TestProxies(unittest.TestCase):
         self.assertEqual(sub.get_from_buffer(topic1).data, '3')
         self.assertIsNone(sub.get_from_buffer(topic1))
         self.assertFalse(sub.has_buffered(topic1))
-        self.node.get_logger().info("test_subscribe_buffer - OK! ")
+        self.node.get_logger().info('test_subscribe_buffer - OK! ')
 
     def test_service_caller(self):
-        self.node.get_logger().info("test_service_caller ...")
+        """Test service caller."""
+        self.node.get_logger().info('test_service_caller ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=2)
         ProxyServiceCaller.initialize(self.node)
@@ -225,7 +234,7 @@ class TestProxies(unittest.TestCase):
 
         def server_callback(request, response):
             response.success = True
-            response.message = "ok"
+            response.message = 'ok'
             return response
 
         self.node.create_service(Trigger, topic1, server_callback)
@@ -246,10 +255,11 @@ class TestProxies(unittest.TestCase):
         self.assertFalse(srv.is_available('/not_there'))
         srv = ProxyServiceCaller({'/invalid': Trigger}, wait_duration=.1)
         self.assertFalse(srv.is_available('/invalid'))
-        self.node.get_logger().info("test_service_caller  - OK! ")
+        self.node.get_logger().info('test_service_caller  - OK! ')
 
     def test_action_client(self):
-        self.node.get_logger().info("test_action_client ...")
+        """Test action client."""
+        self.node.get_logger().info('test_action_client ...')
 
         rclpy.spin_once(self.node, executor=self.executor, timeout_sec=2)
         topic1 = '/action_1'
@@ -271,66 +281,66 @@ class TestProxies(unittest.TestCase):
         client = ProxyActionClient({topic1: BehaviorExecution}, wait_duration=1.0)
         self.assertFalse(client.has_result(topic1))
         status = client.get_state(topic1)
-        self.node.get_logger().info(f"validate action client - check state before sending = {status} ")
+        self.node.get_logger().info(f'validate action client - check state before sending = {status} ')
 
         client.send_goal(topic1, BehaviorExecution.Goal(), wait_duration=1.0)
         status = client.get_state(topic1)
-        self.node.get_logger().info(f"validate action client - check state after goal sent = {status} ")
+        self.node.get_logger().info(f'validate action client - check state after goal sent = {status} ')
 
         end_time = time.time() + 10
         while time.time() < end_time and not client.has_result(topic1):
             status = client.get_state(topic1)
-            # self.node.get_logger().info(f"   get state = {status} ")
+            # self.node.get_logger().info(f'   get state = {status} ')
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
             self.assertTrue(client.is_active(topic1) or client.has_result(topic1))
 
         self.assertTrue(client.has_result(topic1))
 
         status = client.get_state(topic1)
-        self.node.get_logger().info(f"   check state = {status} ")
+        self.node.get_logger().info(f'   check state = {status} ')
 
-        self.node.get_logger().info("validate action client result 1 ... ")
+        self.node.get_logger().info('validate action client result 1 ... ')
         result = client.get_result(topic1)
         self.assertEqual(result.outcome, 'ok')
 
         status = client.get_state(topic1)
         self.assertEqual(status, GoalStatus.STATUS_SUCCEEDED)
-        self.node.get_logger().info("validate action client succeeded - OK! ")
+        self.node.get_logger().info('validate action client succeeded - OK! ')
 
         status = client.get_state(topic1)
-        self.node.get_logger().info(f"   check state before send 2 = {status} ")
+        self.node.get_logger().info(f'   check state before send 2 = {status} ')
         client.send_goal(topic1, BehaviorExecution.Goal(), wait_duration=1.0)
         status = client.get_state(topic1)
-        self.node.get_logger().info(f"   check state after sending goal 2 = {status} ")
+        self.node.get_logger().info(f'   check state after sending goal 2 = {status} ')
 
         # end_time = time.time() + 2
         while not client.has_result(topic1):
             rclpy.spin_once(self.node, executor=self.executor, timeout_sec=0.1)
             self.assertTrue(client.is_active(topic1) or client.has_result(topic1))
             status = client.get_state(topic1)
-            # self.node.get_logger().info(f"   check state = {status} ")
+            # self.node.get_logger().info(f'   check state = {status} ')
 
         self.assertFalse(client.is_active(topic1))
 
-        self.node.get_logger().info("validate action client result 2 ... ")
+        self.node.get_logger().info('validate action client result 2 ... ')
         result = client.get_result(topic1)
         self.assertEqual(result.outcome, 'ok')
 
         status = client.get_state(topic1)
         self.assertEqual(status, GoalStatus.STATUS_SUCCEEDED)
-        self.node.get_logger().info("validate action client succeeded 2 - OK! ")
+        self.node.get_logger().info('validate action client succeeded 2 - OK! ')
 
         self.assertTrue(client.has_result(topic1))
         client.remove_result(topic1)
         self.assertIsNone(client._result.get(topic1))
         self.assertIsNone(client._result_status.get(topic1))
         self.assertFalse(client.has_result(topic1))
-        self.node.get_logger().info("validated remove_result! ")
+        self.node.get_logger().info('validated remove_result! ')
 
         self.assertFalse(client.is_available('/not_there'))
         client = ProxyActionClient({'/invalid': BehaviorExecution}, wait_duration=.1)
         self.assertFalse(client.is_available('/invalid'))
-        self.node.get_logger().info("test_action_client - OK! ")
+        self.node.get_logger().info('test_action_client - OK! ')
         del server  # Through with instance, and explicitly calling del() to avoid ununsed warning
 
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,13 +32,14 @@
 
 """Content is only intended for the flexbe_testing self-test."""
 
-from flexbe_core import Behavior, Autonomy, OperatableStateMachine, EventState, Logger
+from flexbe_core import Autonomy, Behavior, EventState, Logger, OperatableStateMachine
 
 
 class SelftestBehaviorSM(Behavior):
     """Simple behavior for the flexbe_testing self-test of behaviors."""
 
     def __init__(self, node):
+        """Initialize the BehaviorSM test."""
         super(SelftestBehaviorSM, self).__init__()
         self.name = 'Selftest Behavior'
 
@@ -61,6 +62,7 @@ class SelftestBehaviorSM(Behavior):
         # Behavior comments:
 
     def create(self):
+        """Create test SM."""
         _state_machine = OperatableStateMachine(outcomes=['finished', 'failed'],
                                                 input_keys=['data'],
                                                 output_keys=['result'])

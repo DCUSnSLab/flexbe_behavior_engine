@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,9 +28,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
+"""PublisherBoolState."""
 from flexbe_core import EventState
 from flexbe_core.proxy import ProxyPublisher
+
 from std_msgs.msg import Bool
 
 
@@ -51,9 +52,11 @@ class PublisherBoolState(EventState):
         self._pub = ProxyPublisher({self._topic: Bool})
 
     def execute(self, userdata):
+        """Return done."""
         return 'done'
 
     def on_enter(self, userdata):
+        """Publish boolean value from userdata on entering state."""
         val = Bool()
         val.data = userdata.value
         self._pub.publish(self._topic, val)

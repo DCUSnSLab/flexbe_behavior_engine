@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Christopher Newport University
+# Copyright 2024 Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import zlib
+
 from flexbe_core.logger import Logger
 
 
@@ -44,8 +45,9 @@ class StateMap:
         self._num_collision_processed = 0
 
     def __str__(self):
-        return (f"State map with {len(self._state_map)} entries"
-                "." if self._num_collision_processed == 0 else f" with {self._num_collision_processed} collisions!")
+        """Return string with state map information."""
+        return (f'State map with {len(self._state_map)} entries'
+                '.' if self._num_collision_processed == 0 else f' with {self._num_collision_processed} collisions!')
 
     def __getitem__(self, index):
         """Get existing state if possible, or return None."""
@@ -90,7 +92,7 @@ class StateMap:
             while state._state_id in self._state_map:
                 collisions += 1
                 if collisions > 20:
-                    raise KeyError(f"Unable to avoid collisions in StateMap with {path}")
+                    raise KeyError(f"Unable to avoid collisions in StateMap with '{path}'")
                 hash_path += path
                 state._state_id = self._hash_path(hash_path)
             self._state_map[state._state_id] = state
@@ -98,7 +100,7 @@ class StateMap:
         else:
             if state._state_id in self._state_map:
                 Logger.error(f"State '{path}' : id={state._state_id} is already in map!")
-                raise KeyError(f"Existing state in StateMap with {path}")
+                raise KeyError(f"Existing state in StateMap with '{path}'")
             self._state_map[state._state_id] = state
 
     def get_state(self, state_id):
@@ -106,7 +108,7 @@ class StateMap:
         if state_id in self._state_map:
             return self._state_map[state_id]
 
-        Logger.error("State id={state_id} is not in the state map!")
+        Logger.error(f'State id={state_id} is not in the state map!')
         return None
 
     @classmethod

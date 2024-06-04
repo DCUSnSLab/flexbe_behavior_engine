@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Christopher Newport University
+# Copyright 2024 Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,13 +28,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from std_msgs.msg import Bool, Empty, String, UInt32, UInt8
-
 from flexbe_msgs.action import BehaviorExecution
+from flexbe_msgs.msg import BEStatus, BehaviorLog, BehaviorRequest, BehaviorSelection, BehaviorSync
+from flexbe_msgs.msg import CommandFeedback, ContainerStructure
+from flexbe_msgs.msg import OutcomeRequest
 
-from flexbe_msgs.msg import BehaviorLog, BehaviorRequest, BehaviorSelection, BehaviorSync
-from flexbe_msgs.msg import BEStatus, CommandFeedback
-from flexbe_msgs.msg import ContainerStructure, OutcomeRequest
+from std_msgs.msg import Bool, Empty, String, UInt32, UInt8
 
 
 class Topics:
@@ -62,7 +61,7 @@ class Topics:
     _ONBOARD_STATUS_TOPIC = 'flexbe/status'  # Onboard behavior engine status
     _OUTCOME_REQUEST_TOPIC = 'flexbe/outcome_request'  # OCS request outcome
     _OUTCOME_TOPIC = 'flexbe/mirror/outcome'  # State outcomes used in mirror to track status
-    _REQUEST_BEHAVIOR_TOPIC = "flexbe/request_behavior"
+    _REQUEST_BEHAVIOR_TOPIC = 'flexbe/request_behavior'
     _REQUEST_STRUCTURE_TOPIC = 'flexbe/request_mirror_structure'  # Request state machine structure from onboard
     _START_BEHAVIOR_TOPIC = 'flexbe/start_behavior'  # OCS or launcher command to start behavior
     _STATE_LOGGER_TOPIC = 'flexbe/state_logger'
@@ -102,4 +101,5 @@ class Topics:
 
     @staticmethod
     def get_type(topic):
+        """Return topic msg type given topic name."""
         return Topics._topic_types[topic]

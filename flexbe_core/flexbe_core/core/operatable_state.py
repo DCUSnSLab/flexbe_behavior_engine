@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,15 +31,15 @@
 
 """OperatableState."""
 
-from std_msgs.msg import UInt32, String
+from flexbe_core.core.preemptable_state import PreemptableState
+from flexbe_core.core.state_map import StateMap
+from flexbe_core.core.topics import Topics
+from flexbe_core.logger import Logger
+from flexbe_core.state_logger import StateLogger
 
 from flexbe_msgs.msg import OutcomeRequest
 
-from flexbe_core.core.preemptable_state import PreemptableState
-from flexbe_core.core.topics import Topics
-from flexbe_core.core.state_map import StateMap
-from flexbe_core.logger import Logger
-from flexbe_core.state_logger import StateLogger
+from std_msgs.msg import String, UInt32
 
 
 @StateLogger.log_outcomes('flexbe.outcomes')
@@ -53,6 +53,7 @@ class OperatableState(PreemptableState):
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialize the OperatableState instance."""
         super().__init__(*args, **kwargs)
         self.__execute = self.execute
         self.execute = self._operatable_execute
@@ -74,7 +75,7 @@ class OperatableState(PreemptableState):
                 if outcome != self._last_requested_outcome:
                     self._pub.publish(Topics._OUTCOME_REQUEST_TOPIC,
                                       OutcomeRequest(outcome=self.outcomes.index(outcome), target=self.path))
-                    Logger.localinfo("<-- Want result: %s > %s" % (self.name, outcome))
+                    Logger.localinfo("<-- Want result: '%s' > '%s'" % (self.name, outcome))
                     StateLogger.log('flexbe.operator', self, type='request', request=outcome,
                                     autonomy=self.parent.autonomy_level,
                                     required=self.parent.get_required_autonomy(outcome, self))
@@ -91,9 +92,9 @@ class OperatableState(PreemptableState):
         """Update the UI and logs about this outcome."""
         # 0 outcome status denotes no outcome, not index so add +1 for valid outcome (subtract in mirror)
         outcome_index = self.outcomes.index(outcome)
-        Logger.localinfo(f"State result: {self.name} > {outcome}")
+        Logger.localinfo(f"State result: '{self.name}' -> '{outcome}'")
         self._pub.publish(Topics._OUTCOME_TOPIC, UInt32(data=StateMap.hash(self, outcome_index)))
-        self._pub.publish(Topics._DEBUG_TOPIC, String(data="%s > %s" % (self.path, outcome)))
+        self._pub.publish(Topics._DEBUG_TOPIC, String(data='%s > %s' % (self.path, outcome)))
         if self._force_transition:
             StateLogger.log('flexbe.operator', self, type='forced', forced=outcome,
                             requested=self._last_requested_outcome)

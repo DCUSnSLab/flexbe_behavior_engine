@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,10 +30,10 @@
 
 
 """A state machine to interface with ROS."""
-from rclpy.duration import Duration
-
-from flexbe_core.proxy import ProxyPublisher, ProxySubscriberCached
 from flexbe_core.core.state_machine import StateMachine
+from flexbe_core.proxy import ProxyPublisher, ProxySubscriberCached
+
+from rclpy.duration import Duration
 
 
 class RosStateMachine(StateMachine):
@@ -43,11 +43,13 @@ class RosStateMachine(StateMachine):
 
     @staticmethod
     def initialize_ros(node):
+        """Initialize ROS node information."""
         RosStateMachine._node = node
         ProxyPublisher.initialize(node)
         ProxySubscriberCached.initialize(node)
 
     def __init__(self, *args, **kwargs):
+        """Initialize instance of ROSStateMachine."""
         super().__init__(*args, **kwargs)
         self._is_controlled = False
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -39,14 +39,16 @@
 
 __test__ = False  # Do not pytest this class (it is the test!)
 
-from flexbe_INVALID import Behavior, Autonomy, OperatableStateMachine
-from flexbe_states.wait_state import WaitState
+from flexbe_INVALID import Autonomy, Behavior, OperatableStateMachine
+
+from flexbe_states.calculation_state import CalculationState
 from flexbe_states.decision_state import DecisionState
 from flexbe_states.log_state import LogState as flexbe_states__LogState
-from flexbe_states.calculation_state import CalculationState
+from flexbe_states.wait_state import WaitState
+
 # Additional imports can be added inside the following tags
 # [MANUAL_IMPORT]
-raise ValueError("TODO: Remove!")
+raise ValueError('TODO: Remove!')
 # [/MANUAL_IMPORT]
 
 
@@ -68,6 +70,7 @@ class ComplexBehaviorTestSM(Behavior):
     __test__ = False  # Do not pytest this class (it is the test!)
 
     def __init__(self, node):
+        """Initialize ComplexBehaviorTestSM instance."""
         super(ComplexBehaviorTestSM, self).__init__()
         self.name = 'Complex Behavior Test'
         self.node = node
@@ -92,6 +95,7 @@ class ComplexBehaviorTestSM(Behavior):
         # Behavior comments:
 
     def create(self):
+        """Create SM instance."""
         # x:67 y:463, x:336 y:160
         _state_machine = OperatableStateMachine(outcomes=['finished', 'failed'], input_keys=['data'])
         _state_machine.userdata.data = 0

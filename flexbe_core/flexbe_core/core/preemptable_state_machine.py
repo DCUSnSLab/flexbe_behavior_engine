@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,13 +32,14 @@
 """A state machine that can be preempted."""
 import threading
 
-import rclpy
-from std_msgs.msg import Empty
-
 from flexbe_core.core.lockable_state_machine import LockableStateMachine
 from flexbe_core.core.preemptable_state import PreemptableState
 from flexbe_core.core.topics import Topics
 from flexbe_core.logger import Logger
+
+import rclpy
+
+from std_msgs.msg import Empty
 
 
 class PreemptableStateMachine(LockableStateMachine):
@@ -51,6 +52,7 @@ class PreemptableStateMachine(LockableStateMachine):
     _preempted_name = 'preempted'
 
     def __init__(self, *args, **kwargs):
+        """Initialize instance."""
         super().__init__(*args, **kwargs)
         self._status_lock = threading.Lock()
         self._last_deep_states_list = None
@@ -70,6 +72,7 @@ class PreemptableStateMachine(LockableStateMachine):
 
     @staticmethod
     def add(label, state, transitions=None, remapping=None):
+        """Add state to SM."""
         transitions[PreemptableState._preempted_name] = PreemptableStateMachine._preempted_name
         LockableStateMachine.add(label, state, transitions, remapping)
 
@@ -78,28 +81,29 @@ class PreemptableStateMachine(LockableStateMachine):
         return super()._valid_targets + [PreemptableStateMachine._preempted_name]
 
     def spin(self, userdata=None):
+        """Spin the execute loop for preemptable portion."""
         outcome = None
         while rclpy.ok():
             outcome = self.execute(userdata)
 
             # Store the information for safely passing to heartbeat thread
             deep_states = self.get_deep_states()
-            assert isinstance(deep_states, list), f"Expecting a list here, not {deep_states}"
+            assert isinstance(deep_states, list), f'Expecting a list here, not {deep_states}'
             if deep_states != self._last_deep_states_list:
                 # Logger.localinfo(f"New deep states for '{self.name}' len={len(deep_states)} "
-                #                  f"deep states: {[dpst.path for dpst in deep_states if dpst is not None]}")
+                #                  f'deep states: {[dpst.path for dpst in deep_states if dpst is not None]}')
                 with self._status_lock:
                     self._last_deep_states_list = deep_states
             # else:
             #     Logger.localinfo(f"Same old deep states for '{self.name}' len={len(deep_states)} - "
-            #                      f"deep states: {[dpst.name for dpst in deep_states]}")
+            #                      f'deep states: {[dpst.name for dpst in deep_states]}')
 
             if self._inner_sync_request:
                 # Top-level state machine with sync request
                 self.process_sync_request()
 
             if outcome is not None:
-                Logger.loginfo(f"PreemptableStateMachine {self.name} spin() - done with outcome={outcome}")
+                Logger.loginfo(f"PreemptableStateMachine '{self.name}' spin() - done with outcome={outcome}")
                 break
 
             self.wait(seconds=self.sleep_duration)
@@ -112,9 +116,10 @@ class PreemptableStateMachine(LockableStateMachine):
 
           Note: Mirror uses derived version that cleans up mirror paths
         """
-        raise NotImplementedError("Do not call this version directly - "
-                                  "either OperatableStateMachine or Mirror should override")
+        raise NotImplementedError('Do not call this version directly - '
+                                  'either OperatableStateMachine or Mirror should override')
 
     @classmethod
     def process_sync_request(cls):
-        Logger.localinfo("Ignoring PreemptableState process_sync_request")
+        """Process sync request (ignored here - should be handled by derived state)."""
+        Logger.localinfo('Ignoring PreemptableState process_sync_request')

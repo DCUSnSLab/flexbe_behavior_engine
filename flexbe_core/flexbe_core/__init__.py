@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -27,7 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 """
-Initialization for flexbe_core.core module.
+Initialization for flexbe_core package.
 
 Please use EventState as parent class for new states
 because it extends all other parent classes.
@@ -35,13 +35,11 @@ because it extends all other parent classes.
 For a behavior, inherit from OperatableStateMachine as state machine.
 
 """
-from .core import ConcurrencyContainer, EventState   # noqa: F401
-from .core import OperatableStateMachine, PriorityContainer  # noqa: F401
 
 from .behavior import Behavior  # noqa: F401
-
 from .behavior_library import BehaviorLibrary  # noqa: F401
-
+from .core import ConcurrencyContainer, EventState   # noqa: F401
+from .core import OperatableStateMachine, PriorityContainer  # noqa: F401
 from .logger import Logger  # noqa: F401
 from .state_logger import StateLogger  # noqa: F401
 

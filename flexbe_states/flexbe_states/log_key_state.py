@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
+"""LogKeyState."""
 from flexbe_core import EventState, Logger
 
 
@@ -38,21 +38,23 @@ class LogKeyState(EventState):
 
     Can be used to precisely inform the operator about what happened to the behavior.
 
-    -- text  	    string 	    The message to be logged to the terminal Example:  'Counter value:  {}'.
-    -- severity     uint8  	    Type of logging (Logger.REPORT_INFO / WARN / HINT / ERROR)
+    -- text         string    The message to be logged to the terminal Example:  'Counter value:  {}'.
+    -- severity     uint8     Type of logging (Logger.REPORT_INFO / WARN / HINT / ERROR)
 
-    #> data  	    object 		The data provided to be printed in the message. The exact type depends on the request.
+    #> data         object    The data provided to be printed in the message. The exact type depends on the request.
 
-    <= done				        Indicates that the message has been logged.
+    <= done                   Indicates that the message has been logged.
     """
 
     def __init__(self, text, severity=Logger.REPORT_HINT):
+        """Initialize LogKeyState."""
         super(LogKeyState, self).__init__(outcomes=['done'],
                                           input_keys=['data'])
         self._text = text
         self._severity = severity
 
     def execute(self, userdata):
+        """Return done on first execution."""
         # Already logged. No need to wait for anything.
         return 'done'
 

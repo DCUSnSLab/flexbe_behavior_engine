@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,11 +37,12 @@ Use as a 'with' statement and run 'verify' to check whether the context is valid
 
 import os
 import re
-import rclpy
 import time
 
-from rclpy.exceptions import ParameterNotDeclaredException
 from ament_index_python.packages import get_package_share_directory
+
+import rclpy
+from rclpy.exceptions import ParameterNotDeclaredException
 
 from .logger import Logger
 
@@ -66,9 +67,11 @@ class TestContext:
     __test__ = False  # Do not pytest this class (it is the test!)
 
     def __init__(self):
+        """Initialize."""
         pass
 
     def __enter__(self):
+        """Enter test."""
         pass
 
     def ok(self):
@@ -76,19 +79,24 @@ class TestContext:
         return rclpy.ok()
 
     def verify(self):
+        """Verify test results."""
         return True
 
     def spin_once(self):
+        """Spin event loop once."""
         pass
 
     def __exit__(self, exception_type, exception_value, traceback):
+        """Exit the test."""
         pass
 
     def wait_for_finishing(self):
+        """Wait for test to finish."""
         pass
 
     @property
     def success(self):
+        """Check test success."""
         return True
 
 
@@ -96,6 +104,7 @@ class PyTestContext(TestContext):
     """Pylint based state tests uses counter and/or timeout_sec to control execute loop."""
 
     def __init__(self, timeout_sec=None, max_cnt=50):
+        """Initialize the PyTestContext."""
         super().__init__()
         self._cnt = 0
         self._max_cnt = None
@@ -106,7 +115,7 @@ class PyTestContext(TestContext):
         if timeout_sec is not None:
             self._time_out = time.time() + float(timeout_sec)
 
-        assert self._max_cnt is not None or self._time_out is not None, "Must have either timeout or max cnt set!"
+        assert self._max_cnt is not None or self._time_out is not None, 'Must have either timeout or max cnt set!'
 
     def ok(self):
         """Return ok status based on time and count for pytests."""
@@ -123,7 +132,8 @@ class PyTestContext(TestContext):
 class LaunchContext(TestContext):
     """Test context that runs a specified launch file configuration."""
 
-    def __init__(self, node, launch_config, wait_cond="True"):
+    def __init__(self, node, launch_config, wait_cond='True'):
+        """Initialize the launch context."""
         self._node = node
         Logger.initialize(node)
 
@@ -170,7 +180,7 @@ class LaunchContext(TestContext):
         # self._valid = True
 
     def __enter__(self):
-        raise NotImplementedError("Not implemented for ROS 2 - TODO!")
+        raise NotImplementedError('Not implemented for ROS 2 - TODO!')
         self._launchrunner.launch()
         self._launchrunner.spin_once()
         Logger.print_positive('launchfile running')
@@ -191,14 +201,17 @@ class LaunchContext(TestContext):
             Logger.print_negative('unable to check waiting condition:\n\t%s' % str(e))
 
     def verify(self):
+        """Verify valid."""
         return self._valid
 
     def spin_once(self):
+        """Spin test runner loop once."""
         self._launchrunner.spin_once()
 
     def wait_for_finishing(self):
+        """Wait for finishing."""
         check_exited_rate = self._node.create_rate(10, self._node.get_clock())
-        self._node.get_logger().info("Waiting for all launched nodes to exit")
+        self._node.get_logger().info('Waiting for all launched nodes to exit')
         while not all(name in self._exit_codes for name in self._launched_proc_names):
             check_exited_rate.sleep()
         self._node.destroy_rate(check_exited_rate)
@@ -209,4 +222,5 @@ class LaunchContext(TestContext):
 
     @property
     def success(self):
+        """Verify success."""
         return not any(code > 0 for code in self._exit_codes.values())

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,7 +37,8 @@
 # Only code inside the [MANUAL] tags will be kept.        #
 ###########################################################
 
-from flexbe_core import Behavior, Autonomy, OperatableStateMachine
+from flexbe_core import Autonomy, Behavior, OperatableStateMachine
+
 from flexbe_states.log_state import LogState as flexbe_states__LogState
 from flexbe_states.wait_state import WaitState as flexbe_states__WaitState
 
@@ -61,6 +62,7 @@ class LogBehaviorTestSM(Behavior):
     __test__ = False  # Do not pytest this class (it is the test!)
 
     def __init__(self, node):
+        """Initialize LogBehaviorTestSM instance."""
         super(LogBehaviorTestSM, self).__init__()
         self.name = 'Log Behavior Test'
         self.node = node
@@ -80,6 +82,7 @@ class LogBehaviorTestSM(Behavior):
         # Behavior comments:
 
     def create(self):
+        """Create state machine for test."""
         # x:30 y:365, x:130 y:365
         _state_machine = OperatableStateMachine(outcomes=['finished', 'failed'])
 
@@ -91,7 +94,7 @@ class LogBehaviorTestSM(Behavior):
         with _state_machine:
             # x:30 y:40
             OperatableStateMachine.add('Log',
-                                       flexbe_states__LogState(text="Test data", severity=2),
+                                       flexbe_states__LogState(text='Test data', severity=2),
                                        transitions={'done': 'Wait'},
                                        autonomy={'done': Autonomy.Off})
             # x:30 y:90

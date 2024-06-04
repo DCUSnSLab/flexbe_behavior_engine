@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -35,10 +35,10 @@ import re
 
 from flexbe_core.core.user_data import UserData
 
-from .logger import Logger
-from .test_interface import TestInterface
-from .test_context import TestContext, PyTestContext
 from .data_provider import DataProvider
+from .logger import Logger
+from .test_context import PyTestContext, TestContext
+from .test_interface import TestInterface
 
 
 class Tester:
@@ -47,7 +47,8 @@ class Tester:
     __test__ = False  # Do not pytest this class (it is the test!)
 
     def __init__(self, node, executor=None):
-        self._tests = dict()
+        """Initialize Test instance."""
+        self._tests = {}
         self.node = node
         self.executor = executor
         self._import_only = False
@@ -55,8 +56,9 @@ class Tester:
         Logger.initialize(node)
 
     def import_interface(self, name, config):
+        """Import interface."""
         try:
-            self.node.get_logger().info(f"Importing test configuration for {name}\n config: {config} ...")
+            self.node.get_logger().info(f"Importing test configuration for '{name}'\n config: {config} ...")
             self._verify_config(config)
         except Exception as e:
             Logger.print_title(name, 'Invalid', None)
@@ -84,10 +86,12 @@ class Tester:
             return None
 
     def run_pytest(self, name, config, timeout_sec=None, max_cnt=50):
-        self.node.get_logger().info(f" Running pytest setup for {name} with timeout_sec={timeout_sec} max_cnt={max_cnt} ...")
+        """Run pytest."""
+        self.node.get_logger().info(f" Running pytest setup for '{name}' with timeout_sec={timeout_sec} max_cnt={max_cnt} ...")
         return self.run_test(name, config, context=PyTestContext(timeout_sec=timeout_sec, max_cnt=max_cnt))
 
     def run_test(self, name, config, context=None):
+        """Run test."""
         test_interface = self.import_interface(name, config)
 
         if test_interface is None:
@@ -95,14 +99,14 @@ class Tester:
 
         if self._import_only:
             success = True
-            self.node.get_logger().info(f" Successfully imported for {name} = ...")
+            self.node.get_logger().info(f" Successfully imported for '{name}' = ...")
             Logger.print_result(name, success)
             self._tests['test_%s_pass' % name] = self._test_pass(success)
             return 1 if success else 0
 
         # load data source
         try:
-            self.node.get_logger().info(f" Get data provider for {name} ...")
+            self.node.get_logger().info(f" Get data provider for '{name}' ...")
             data = DataProvider(self.node, bagfile=None)
         except Exception as e:
             Logger.print_failure('unable to load data source %s:\n\t%s' %
@@ -123,8 +127,8 @@ class Tester:
                 return 0
 
             # instantiate test subject
-            self.node.get_logger().info(f" Instantiate {name} with params ...")
-            params = {key: data.parse(value) for key, value in list(config.get('params', dict()).items())}
+            self.node.get_logger().info(f" Instantiate '{name}' with params ...")
+            params = {key: data.parse(value) for key, value in list(config.get('params', {}).items())}
             try:
                 test_interface.instantiate(params)
             except Exception as e:
@@ -134,15 +138,15 @@ class Tester:
                 return 0
 
             # prepare user data
-            self.node.get_logger().info(f" Prepare userdata for {name} ...")
+            self.node.get_logger().info(f" Prepare userdata for '{name}' ...")
             userdata = UserData()
-            for input_key, input_value in list(config.get('input', dict()).items()):
+            for input_key, input_value in list(config.get('input', {}).items()):
                 userdata[input_key] = data.parse(input_value)
-            expected = {key: data.parse(value) for key, value in config.get('output', dict()).items()}
+            expected = {key: data.parse(value) for key, value in config.get('output', {}).items()}
 
             # run test subject
             try:
-                self.node.get_logger().info(f" Execute {name} ...")
+                self.node.get_logger().info(f" Execute '{name}' ...")
                 if self.executor is not None:
                     def spin_cb():
                         self.executor.spin_once(timeout_sec=0.01)
@@ -152,14 +156,14 @@ class Tester:
                                                  context,
                                                  spin_cb=spin_cb)
             except Exception as exc:
-                self.node.get_logger().info(f" failed to execute {name} \n  {exc}")
+                self.node.get_logger().info(f" failed to execute '{name}' \n  {exc}")
                 Logger.print_failure('failed to execute %s (%s)\n\t%s' %
                                      (config['class'], config['path'], str(exc)))
                 self._tests['test_%s_pass' % name] = self._test_pass(False)
                 return 0
 
             if config.get('require_launch_success', False):
-                self.node.get_logger().info(f" Wait for finishing context for {name} ...")
+                self.node.get_logger().info(f" Wait for finishing context for '{name}' ...")
                 context.wait_for_finishing()
 
         # evaluate outcome
@@ -194,7 +198,7 @@ class Tester:
 
         # report result
         success = outcome_ok and output_ok
-        # self.node.get_logger().info(f" Success for {name} = {success} = {outcome_ok} and {output_ok}...")
+        # self.node.get_logger().info(f" Success for '{name}' = {success} = {outcome_ok} and {output_ok}...")
         Logger.print_result(name, success)
         self._tests['test_%s_pass' % name] = self._test_pass(success)
         return 1 if success else 0
@@ -210,20 +214,20 @@ class Tester:
 
     def _test_output(self, value, expected):
         def _test_call(test_self):
-            test_self.assertEqual(value, expected, "Output value %s does not match expected %s" % (value, expected))
+            test_self.assertEqual(value, expected, 'Output value %s does not match expected %s' % (value, expected))
         return _test_call
 
     def _test_outcome(self, outcome, expected):
         def _test_call(test_self):
-            test_self.assertEqual(outcome, expected, "Outcome %s does not match expected %s" % (outcome, expected))
+            test_self.assertEqual(outcome, expected, 'Outcome %s does not match expected %s' % (outcome, expected))
         return _test_call
 
     def _test_pass(self, passed):
         def _test_call(test_self):
-            test_self.assertTrue(passed, "Did not pass configured tests.")
+            test_self.assertTrue(passed, 'Did not pass configured tests.')
         return _test_call
 
     def _test_config_invalid(self, config):
         def _test_call(test_self):
-            test_self.fail("Test config is invalid: %s" % config)
+            test_self.fail('Test config is invalid: %s' % config)
         return _test_call

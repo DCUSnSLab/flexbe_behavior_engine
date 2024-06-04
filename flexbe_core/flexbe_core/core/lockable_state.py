@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,13 +30,14 @@
 
 
 """Implement LockableState that can prevent transition."""
-from std_msgs.msg import String
+
+from flexbe_core.core.manually_transitionable_state import ManuallyTransitionableState
+from flexbe_core.core.topics import Topics
+from flexbe_core.logger import Logger
 
 from flexbe_msgs.msg import CommandFeedback
 
-from flexbe_core.logger import Logger
-from flexbe_core.core.manually_transitionable_state import ManuallyTransitionableState
-from flexbe_core.core.topics import Topics
+from std_msgs.msg import String
 
 
 class LockableState(ManuallyTransitionableState):
@@ -49,6 +50,7 @@ class LockableState(ManuallyTransitionableState):
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialize LockableState instance."""
         super().__init__(*args, **kwargs)
         self.__execute = self.execute
         self.execute = self._lockable_execute
@@ -57,6 +59,7 @@ class LockableState(ManuallyTransitionableState):
         self._stored_outcome = None
 
     def _lockable_execute(self, *args, **kwargs):
+        """Execute lockable portion of state."""
         if self._is_controlled and self._sub.has_msg(Topics._CMD_LOCK_TOPIC):
             msg = self._sub.get_last_msg(Topics._CMD_LOCK_TOPIC)
             self._sub.remove_last_msg(Topics._CMD_LOCK_TOPIC)
@@ -95,6 +98,7 @@ class LockableState(ManuallyTransitionableState):
         return outcome
 
     def _execute_lock(self, target):
+        """Execute lock."""
         if target in (self.path, ''):
             target = self.path
             found_target = True
@@ -103,11 +107,11 @@ class LockableState(ManuallyTransitionableState):
             found_target = self._parent.lock(target)
         # provide feedback about lock
         self._pub.publish(Topics._CMD_FEEDBACK_TOPIC,
-                          CommandFeedback(command="lock", args=[target, target if found_target else ""]))
+                          CommandFeedback(command='lock', args=[target, target if found_target else '']))
         if not found_target:
-            Logger.logwarn(f"Wanted to lock {target}, but could not find it in current path {self.path}.")
+            Logger.logwarn(f"Wanted to lock '{target}', but could not find it in current path '{self.path}'.")
         else:
-            Logger.localinfo(f"--> Locking in state {target}")
+            Logger.localinfo(f"--> Locking in state '{target}'")
 
     def _execute_unlock(self, target):
         if target == self.path or (self._locked and target == ''):
@@ -118,11 +122,11 @@ class LockableState(ManuallyTransitionableState):
             found_target = self._parent.unlock(target)
         # provide feedback about unlock
         self._pub.publish(Topics._CMD_FEEDBACK_TOPIC,
-                          CommandFeedback(command="unlock", args=[target, target if found_target else ""]))
+                          CommandFeedback(command='unlock', args=[target, target if found_target else '']))
         if not found_target:
-            Logger.logwarn(f"Wanted to unlock {target}, but could not find it in current path {self.path}.")
+            Logger.logwarn(f"Wanted to unlock '{target}', but could not find it in current path '{self.path}'.")
         else:
-            Logger.localinfo(f"--> Unlocking in state {target}")
+            Logger.localinfo(f"--> Unlocking in state '{target}'")
 
     def _enable_ros_control(self):
         if not self._is_controlled:
@@ -139,4 +143,5 @@ class LockableState(ManuallyTransitionableState):
             self._sub.unsubscribe_topic(Topics._CMD_UNLOCK_TOPIC, inst_id=id(self))
 
     def is_locked(self):
+        """Check is locked."""
         return self._locked

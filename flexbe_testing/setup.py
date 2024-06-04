@@ -1,5 +1,7 @@
+"""Setup for flexbe_testing package."""
 import os
 from glob import glob
+
 from setuptools import setup
 
 package_name = 'flexbe_testing'
