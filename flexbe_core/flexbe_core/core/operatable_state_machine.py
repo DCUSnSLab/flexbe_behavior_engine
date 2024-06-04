@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,6 @@
 """OperatableStateMachine."""
 from enum import Enum
 
-from std_msgs.msg import Empty, Int32, UInt32, UInt8, String
-
 from flexbe_core.core.operatable_state import OperatableState
 from flexbe_core.core.preemptable_state_machine import PreemptableStateMachine
 from flexbe_core.core.ros_state import RosState
@@ -44,6 +42,8 @@ from flexbe_core.logger import Logger
 from flexbe_core.state_logger import StateLogger
 
 from flexbe_msgs.msg import BehaviorSync, CommandFeedback, Container, ContainerStructure, OutcomeRequest
+
+from std_msgs.msg import Empty, Int32, String, UInt32, UInt8
 
 
 class OperatableStateMachine(PreemptableStateMachine):
@@ -64,6 +64,7 @@ class OperatableStateMachine(PreemptableStateMachine):
         ConcurrencyContainer = 3
 
     def __init__(self, *args, **kwargs):
+        """Initialize OperatableStateMachine instance."""
         super().__init__(*args, **kwargs)
         self.id = None
         self._autonomy = {}
@@ -152,8 +153,8 @@ class OperatableStateMachine(PreemptableStateMachine):
                 state_msg.transitions = [self._transitions[state.name][outcome] for outcome in state.outcomes]
                 state_msg.autonomy = [self._autonomy[state.name][outcome] for outcome in state.outcomes]
             except Exception as exc:  # pylint: disable=W0703
-                Logger.logerr(f"Error building container structure for {state.name}!")
-                Logger.localerr(f"{type(exc)} - {exc}")
+                Logger.logerr(f"Error building container structure for '{state.name}'!")
+                Logger.localerr(f"'{type(exc)}' - {exc}")
         return container_msg
 
     def get_latest_status(self):
@@ -189,7 +190,7 @@ class OperatableStateMachine(PreemptableStateMachine):
             self._last_exception = exc
             Logger.logerr('Failed to execute state %s:\n%s' % (self.current_state_label, str(exc)))
             import traceback  # pylint: disable=C0415
-            Logger.localinfo(traceback.format_exc().replace("%", "%%"))  # Guard against exeception including format!
+            Logger.localinfo(traceback.format_exc().replace('%', '%%'))  # Guard against exeception including format!
 
         if self._is_controlled:
             # reset previously requested outcome if applicable
@@ -206,7 +207,7 @@ class OperatableStateMachine(PreemptableStateMachine):
                         self._pub.publish(Topics._OUTCOME_REQUEST_TOPIC,
                                           OutcomeRequest(outcome=self.outcomes.index(outcome),
                                                          target=self.path))
-                        Logger.localinfo("<-- Want result: %s > %s" % (self.name, outcome))
+                        Logger.localinfo("<-- Want result: '%s' -> '%s'" % (self.name, outcome))
                         StateLogger.log('flexbe.operator', self, type='request', request=outcome,
                                         autonomy=self.parent.autonomy_level,
                                         required=self.parent.get_required_autonomy(outcome, self))
@@ -228,14 +229,14 @@ class OperatableStateMachine(PreemptableStateMachine):
             outcome_index = self.outcomes.index(outcome)
         except Exception as exc:  # pylint: disable=W0703
             outcome_index = 0
-            Logger.localerr("State Machine outcome error : %s > %s (%d) (%d) (%s)"
+            Logger.localerr('State Machine outcome error : %s > %s (%d) (%d) (%s)'
                             % (self.name, outcome, outcome_index, self._state_id, self.__class__.__name__))
             raise exc
 
-        Logger.localinfo("State Machine result: %s > %s (%d) (%d) (%s)"
+        Logger.localinfo('State Machine result: %s > %s (%d) (%d) (%s)'
                          % (self.name, outcome, outcome_index, self._state_id, self.__class__.__name__))
         self._pub.publish(Topics._OUTCOME_TOPIC, UInt32(data=StateMap.hash(self, outcome_index)))
-        self._pub.publish(Topics._DEBUG_TOPIC, String(data="%s > %s" % (self.path, outcome)))
+        self._pub.publish(Topics._DEBUG_TOPIC, String(data='%s > %s' % (self.path, outcome)))
         if self._force_transition:
             StateLogger.log('flexbe.operator', self, type='forced', forced=outcome,
                             requested=self._last_requested_outcome)
@@ -251,24 +252,27 @@ class OperatableStateMachine(PreemptableStateMachine):
         if self._inner_sync_request:
             self._inner_sync_request = False
             self._pub.publish(Topics._MIRROR_SYNC_TOPIC, self.get_latest_status())
-            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command="sync", args=[]))
-            Logger.localinfo("<-- Sent synchronization message to mirror.")
+            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command='sync', args=[]))
+            Logger.localinfo('<-- Sent synchronization message to mirror.')
         else:
             Logger.error('Inner sync processed for %s - but no sync request flag?' % (self.name))
 
     def is_transition_allowed(self, label, outcome):
+        """Is transition allowed."""
         return self._autonomy[label].get(outcome, -1) < OperatableStateMachine.autonomy_level
 
     def get_required_autonomy(self, outcome, state):
+        """Get required autonomy."""
         try:
             assert self.current_state_label == state.name, "get required autonomys in OSM state doesn't match!"
             return self._autonomy[self.current_state_label][outcome]
         except Exception:  # pylint: disable=W0703
             Logger.error(f"Failure to retrieve autonomy for '{self.name}' - "
                          f"  current state label='{self.name}' outcome='{outcome}'.")
-            Logger.localerr(f"{self._autonomy}")
+            Logger.localerr(f'{self._autonomy}')
 
     def destroy(self):
+        """Destroy this state machine."""
         Logger.localinfo(f"Destroy state machine '{self.name}': {self.id} inst_id={id(self)} ...")
         self._notify_stop()  # Recursively stop the states
 
@@ -289,7 +293,7 @@ class OperatableStateMachine(PreemptableStateMachine):
         self._pub.remove_publisher(Topics._OUTCOME_TOPIC)
         self._pub.remove_publisher(Topics._OUTCOME_REQUEST_TOPIC)
 
-        Logger.localinfo("     state logger shutdown ...")
+        Logger.localinfo('     state logger shutdown ...')
         StateLogger.shutdown()
 
     def confirm(self, name, beh_id):
@@ -353,28 +357,28 @@ class OperatableStateMachine(PreemptableStateMachine):
             self._preempt_cb(msg)
         else:
             OperatableStateMachine.autonomy_level = msg.data
-        self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command="autonomy", args=[]))
+        self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command='autonomy', args=[]))
 
     def _sync_callback(self, msg):
         Logger.localwarn(f"--> Synchronization requested ... ({self.id}) '{self.name}' ")
         self._inner_sync_request = True  # Flag to process at the end of spin loop
 
     def _attach_callback(self, msg):
-        Logger.localinfo("--> Enabling attach control...")
+        Logger.localinfo('--> Enabling attach control...')
         # set autonomy level
         OperatableStateMachine.autonomy_level = msg.data
         # enable control of states
         self._enable_ros_control()
         self._inner_sync_request = True
         # send command feedback
-        cfb = CommandFeedback(command="attach")
+        cfb = CommandFeedback(command='attach')
         cfb.args.append(self.name)
         self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, cfb)
-        Logger.localinfo("<-- Sent attach confirm.")
+        Logger.localinfo('<-- Sent attach confirm.')
 
     def _mirror_structure_callback(self, msg):
         if self._structure:
-            Logger.localinfo(f"--> Sending behavior structure to mirror id={msg.data} ...")
+            Logger.localinfo(f'--> Sending behavior structure to mirror id={msg.data} ...')
             self._pub.publish(Topics._MIRROR_STRUCTURE_TOPIC, self._structure)
             self._inner_sync_request = True
             # enable control of states since a mirror is listening
@@ -394,7 +398,7 @@ class OperatableStateMachine(PreemptableStateMachine):
                 state._notify_start()
 
     def _notify_stop(self):
-        Logger.localinfo(f"Notify stop for  {self.name} {self.path} ({id(self)}) ")
+        Logger.localinfo(f"Notify stop for '{self.name}' from '{self.path}' ({id(self)}) ")
 
         for state in self._states:
             if isinstance(state, OperatableState):
@@ -408,6 +412,7 @@ class OperatableStateMachine(PreemptableStateMachine):
         self._structure = None  # Flag for destruction
 
     def on_exit(self, userdata):
+        """Call on exiting the statemachine."""
         if self._current_state is not None:
             udata = UserData(reference=self.userdata,
                              input_keys=self._current_state.input_keys,

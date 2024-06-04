@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
 
 
 """Provide default QoS settings for FlexBE."""
-from rclpy.qos import QoSProfile, QoSDurabilityPolicy, QoSReliabilityPolicy
+from rclpy.qos import QoSDurabilityPolicy, QoSProfile, QoSReliabilityPolicy
 
 # see https://index.ros.org/doc/ros2/Concepts/About-Quality-of-Service-Settings for details
 QOS_DEFAULT = QoSProfile(depth=10)  # default queue_size setting

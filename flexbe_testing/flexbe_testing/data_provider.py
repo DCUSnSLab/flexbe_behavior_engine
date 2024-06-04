@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,8 +32,9 @@
 """Provides an interface for required test case data."""
 
 import os
-# import rosbag
+
 from ament_index_python.packages import get_package_share_directory
+
 from .logger import Logger
 
 
@@ -43,6 +44,7 @@ class DataProvider:
     __test__ = False  # Do not pytest this class (it is the test!)
 
     def __init__(self, node, bagfile=None):
+        """Initialize DataProvider instance."""
         self.node = node
         Logger.initialize(node)
         self._bag = None
@@ -58,7 +60,7 @@ class DataProvider:
                 bagpath = os.path.join(pkgpath, '/'.join(bagfile.split('/')[1:]))
 
             # storage_options, converter_options = get_rosbag_options(bagpath)
-            raise NotImplementedError("ROS bag loading not implemented in ROS 2 - TODO!")
+            raise NotImplementedError('ROS bag loading not implemented in ROS 2 - TODO!')
 
             # self._bag = rosbag2_py.SequentialReader()
             # self._bag.open(storage_options, converter_options)
@@ -89,7 +91,7 @@ class DataProvider:
             elif isinstance(value, str) and len(value) > 1 and value[0] == '/' and value[1] == '/':
                 result = value[1:]
         except Exception as e:
-            Logger.print_error('unable to parse value "%s" (will be considered as string):\n\t%s' % (
+            Logger.print_error("unable to parse value '%s' (will be considered as string):\n\t%s" % (
                 str(value), str(e)
             ))
             result = str(value)

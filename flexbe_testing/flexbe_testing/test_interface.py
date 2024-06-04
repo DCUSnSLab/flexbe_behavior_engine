@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,9 +32,11 @@
 """Interface to states and behaviors that are subject to testing."""
 
 import inspect
-import rclpy
 
 from flexbe_core.core import EventState
+
+import rclpy
+
 from .logger import Logger
 
 
@@ -44,6 +46,7 @@ class TestInterface:
     __test__ = False  # Do not pytest this class (it is the test!)
 
     def __init__(self, node, path, classname):
+        """Initialize TestInterface instance."""
         package = __import__(path, fromlist=[path])
         clsmembers = inspect.getmembers(package, lambda member: (
             inspect.isclass(member) and member.__module__ == package.__name__
@@ -54,23 +57,26 @@ class TestInterface:
         self._class = next(c for name, c in clsmembers if name == classname)
         self._instance = None
         self._node = node
-        self._node.get_logger().info(f"rclpy.ok={rclpy.ok(context=self._node.context)} context={self._node.context.ok()}")
+        self._node.get_logger().info(f'rclpy.ok={rclpy.ok(context=self._node.context)} context={self._node.context.ok()}')
         try:
             self._class.initialize_ros(node)
-            Logger.print_positive("Given class is a state")
+            Logger.print_positive('Given class is a state')
         except Exception:
-            Logger.print_positive("Given class is a state machine")
+            Logger.print_positive('Given class is a state machine')
 
         Logger.print_positive('%s imported' % self.get_base_name())
 
     def is_state(self):
+        """Check is state."""
         return issubclass(self._class, EventState)
 
     def get_base_name(self):
-        return "state" if self.is_state() else "behavior"
+        """Get base name."""
+        return 'state' if self.is_state() else 'behavior'
 
     # instantiate
     def instantiate(self, params=None):
+        """Instantiate the test."""
         if self.is_state():
             self._instance = self._instantiate_state(params=params)
         else:
@@ -78,12 +84,14 @@ class TestInterface:
         Logger.print_positive('%s instantiated' % self.get_base_name())
 
     def _instantiate_state(self, params=None):
+        """Instantiate the state."""
         if params is None:
             return self._class()
         else:
             return self._class(**params)
 
     def _instantiate_behavior(self, params=None):
+        """Instantiate the behavior."""
         be = self._class(node=self._node)
         if params is not None:
             for name, value in params.items():
@@ -94,6 +102,7 @@ class TestInterface:
     # execute
 
     def execute(self, userdata, context, spin_cb=None):
+        """Execute the test."""
         spin_cb = spin_cb or (lambda: None)
 
         if self.is_state():

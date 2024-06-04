@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,18 +33,21 @@
 
 import difflib
 import os
-import yaml
 import zlib
 
-from rclpy.action import ActionServer
-from rosidl_runtime_py import get_interface_path
-
-from flexbe_msgs.msg import BehaviorSelection, BehaviorModification, BEStatus
-from flexbe_msgs.action import BehaviorExecution
 from flexbe_core import BehaviorLibrary
 from flexbe_core.core.topics import Topics
 
-from std_msgs.msg import String, Empty
+from flexbe_msgs.action import BehaviorExecution
+from flexbe_msgs.msg import BEStatus, BehaviorModification, BehaviorSelection
+
+from rclpy.action import ActionServer
+
+from rosidl_runtime_py import get_interface_path
+
+from std_msgs.msg import Empty, String
+
+import yaml
 
 
 class BehaviorActionServer:
@@ -72,7 +75,7 @@ class BehaviorActionServer:
 
         self._behavior_lib = BehaviorLibrary(node)
 
-        self._node.get_logger().info("%d behaviors available, ready for start request." % self._behavior_lib.count_behaviors())
+        self._node.get_logger().info('%d behaviors available, ready for start request.' % self._behavior_lib.count_behaviors())
 
     def _goal_cb(self, goal_handle):
         self._current_goal = goal_handle
@@ -84,7 +87,7 @@ class BehaviorActionServer:
         self._node.get_logger().info('Received a new request to start behavior: %s' % goal.behavior_name)
         be_key, behavior = self._behavior_lib.find_behavior(goal.behavior_name)
         if be_key is None:
-            self._node.get_logger().error("Deny goal: Did not find behavior with requested name %s" % goal.behavior_name)
+            self._node.get_logger().error('Deny goal: Did not find behavior with requested name %s' % goal.behavior_name)
             self._current_goal.canceled()
             return
 
@@ -125,14 +128,14 @@ class BehaviorActionServer:
 
         # check for local modifications of the behavior to send them to the onboard behavior
         be_filepath_new = self._behavior_lib.get_sourcecode_filepath(be_key)
-        with open(be_filepath_new, "r") as f:
+        with open(be_filepath_new, 'r') as f:
             be_content_new = f.read()
 
         be_filepath_old = self._behavior_lib.get_sourcecode_filepath(be_key, add_tmp=True)
         if not os.path.isfile(be_filepath_old):
             be_selection.behavior_id = zlib.adler32(be_content_new.encode()) & 0x7fffffff
         else:
-            with open(be_filepath_old, "r") as f:
+            with open(be_filepath_old, 'r') as f:
                 be_content_old = f.read()
 
             sqm = difflib.SequenceMatcher(a=be_content_old, b=be_content_new)
@@ -161,7 +164,7 @@ class BehaviorActionServer:
         self._node.get_logger().info('Behavior execution preempt requested!')
 
     def _execute_cb(self, goal_handle):
-        self._node.get_logger().info("Executing behavior")
+        self._node.get_logger().info('Executing behavior')
 
     def _status_cb(self, msg):
         if msg.code == BEStatus.ERROR:
@@ -182,19 +185,19 @@ class BehaviorActionServer:
             return
 
         if msg.behavior_id != self._active_behavior_id:
-            self._node.get_logger().warn("Ignored status because behavior id differed "
-                                         f"({msg.behavior_id} vs {self._active_behavior_id})!")
+            self._node.get_logger().warn('Ignored status because behavior id differed '
+                                         f'({msg.behavior_id} vs {self._active_behavior_id})!')
             return
         elif msg.code == BEStatus.FINISHED:
             result = msg.args[0] if len(msg.args) >= 1 else ''
-            self._node.get_logger().info('Finished behavior execution with result "%s"!' % result)
+            self._node.get_logger().info("Finished behavior execution with result '%s'!" % result)
             self._current_goal.succeed()
         elif msg.code == BEStatus.FAILED:
-            self._node.get_logger().error('Behavior execution failed in state %s!' % str(self._current_state))
+            self._node.get_logger().error("Behavior execution failed in state '%s'!" % str(self._current_state))
             self._current_goal.abort()
 
     def _state_cb(self, msg):
         self._current_state = msg.data
         if self._current_goal and self._current_goal.is_active:
             self._current_goal.publish_feedback(BehaviorExecution.Feedback(current_state=self._current_state))
-            self._node.get_logger().loginfo('Current state: %s' % self._current_state)
+            self._node.get_logger().loginfo("Current state: '%s'" % self._current_state)

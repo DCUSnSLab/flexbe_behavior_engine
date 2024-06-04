@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -33,46 +33,48 @@ Launch file used for testing of FlexBE states and behaviors.
 Generally invoked from test launch, not launched directly here.
 """
 from launch import LaunchDescription
-from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 
+from launch_ros.actions import Node
+
 
 def generate_launch_description():
+    """Generate the launch description for flexbe testing."""
     return LaunchDescription([
         DeclareLaunchArgument(
-            "testcases",
-            default_value=""),
+            'testcases',
+            default_value=''),
         DeclareLaunchArgument(
-            "package",
-            default_value=""),
+            'package',
+            default_value=''),
         DeclareLaunchArgument(
-            "print_debug_positive",
-            default_value="true"),
+            'print_debug_positive',
+            default_value='true'),
         DeclareLaunchArgument(
-            "print_debug_negative",
-            default_value="true"),
+            'print_debug_negative',
+            default_value='true'),
         DeclareLaunchArgument(
-            "mute_info",
-            default_value="false"),
+            'mute_info',
+            default_value='false'),
         DeclareLaunchArgument(
-            "mute_warn",
-            default_value="false"),
+            'mute_warn',
+            default_value='false'),
         DeclareLaunchArgument(
-            "mute_error",
-            default_value="false"),
+            'mute_error',
+            default_value='false'),
         DeclareLaunchArgument(
-            "compact_format",
-            default_value="false"),
+            'compact_format',
+            default_value='false'),
         Node(
-            package="flexbe_testing", executable="testing_node", output="screen",
-            name="flexbe_testing",
-            arguments=[LaunchConfiguration("testcases")],
-            parameters=[{"~package": LaunchConfiguration("package"),
-                         "~print_debug_positive": LaunchConfiguration("print_debug_positive"),
-                         "~print_debug_negative": LaunchConfiguration("print_debug_negative"),
-                         "~mute_info": LaunchConfiguration("mute_info"),
-                         "~mute_warn": LaunchConfiguration("mute_warn"),
-                         "~mute_error": LaunchConfiguration("mute_error"),
-                         "~compact_format": LaunchConfiguration("compact_format")}])
+            package='flexbe_testing', executable='testing_node', output='screen',
+            name='flexbe_testing',
+            arguments=[LaunchConfiguration('testcases')],
+            parameters=[{'~package': LaunchConfiguration('package'),
+                         '~print_debug_positive': LaunchConfiguration('print_debug_positive'),
+                         '~print_debug_negative': LaunchConfiguration('print_debug_negative'),
+                         '~mute_info': LaunchConfiguration('mute_info'),
+                         '~mute_warn': LaunchConfiguration('mute_warn'),
+                         '~mute_error': LaunchConfiguration('mute_error'),
+                         '~compact_format': LaunchConfiguration('compact_format')}])
     ])

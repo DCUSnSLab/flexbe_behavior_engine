@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,7 +31,7 @@
 
 # ROS 1 style
 # <launch>
-#     <node name="pub" pkg="ros2" type="topic" args="pub /test geometry_msgs/Pose;{position: {x: 6.4}};" />
+#     <node name='pub' pkg='ros2' type='topic' args='pub /test geometry_msgs/Pose;{position: {x: 6.4}};' />
 # </launch>
 
 from launch import LaunchDescription
@@ -39,6 +39,7 @@ from launch.actions import ExecuteProcess
 
 
 def generate_launch_description():
+    """Generate launch description."""
     return LaunchDescription([
         ExecuteProcess(cmd=['ros2', 'topic', 'pub', '/test', 'geometry_msgs/Pose', '{position: {x: 6.4}}'])
     ])

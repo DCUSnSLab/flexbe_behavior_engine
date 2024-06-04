@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,10 +30,10 @@
 
 
 """Implement FlexBE Statemachine."""
-from flexbe_core.logger import Logger
+from flexbe_core.core.exceptions import StateError, StateMachineError
 from flexbe_core.core.state import State
 from flexbe_core.core.user_data import UserData
-from flexbe_core.core.exceptions import StateError, StateMachineError
+from flexbe_core.logger import Logger
 
 
 class StateMachine(State):
@@ -42,6 +42,7 @@ class StateMachine(State):
     _currently_opened_container = None
 
     def __init__(self, *args, **kwargs):
+        """Initialize the StateMachine instance."""
         super().__init__(*args, **kwargs)
         self._states = []
         self._labels = {}
@@ -53,33 +54,39 @@ class StateMachine(State):
         self._previously_opened_container = None
 
     def __enter__(self):
+        """Enter the SM."""
         self._previously_opened_container = StateMachine._currently_opened_container
         StateMachine._currently_opened_container = self
 
     def __exit__(self, *args):
+        """Exit the SM."""
         StateMachine._currently_opened_container = self._previously_opened_container
         self._previously_opened_container = None
 
     def __contains__(self, label):
+        """Check if label in this SM."""
         return label in self._labels
 
     def __getitem__(self, label):
+        """Get item corresponding to label."""
         return self._labels[label]
 
     def __iter__(self):
+        """Iterate over states in SM."""
         return iter(state.name for state in self._states)
 
     # construction
 
     @staticmethod
     def add(label, state, transitions, remapping=None):
+        """Add state to SM."""
         self = StateMachine.get_opened_container()
         if self is None:
             raise StateMachineError("No container opened, activate one first by: 'with state_machine:'")
         if label in self._labels:
-            raise StateMachineError("The label %s has already been added to this state machine!" % label)
+            raise StateMachineError("The label '%s' has already been added to this state machine!" % label)
         if label in self._outcomes:
-            raise StateMachineError("The label %s is an outcome of this state machine!" % label)
+            raise StateMachineError("The label '%s' is an outcome of this state machine!" % label)
         # add state to this state machine
         self._states.append(state)
         self._labels[label] = state
@@ -91,16 +98,19 @@ class StateMachine(State):
 
     @staticmethod
     def get_opened_container():
+        """Get open container from this SM."""
         return StateMachine._currently_opened_container
 
     def wait(self, seconds=None):
+        """Wait."""
         # This should not be called; expect to call ros_state_machine version instead!
-        Logger.localinfo(f"Error calling StateMachine.wait Dummy wait method for "
-                         f"{self.name} seconds={seconds}")
-        raise RuntimeError(f"Error calling StateMachine.wait Dummy wait method for "
-                           f"{self.name} seconds={seconds}")
+        Logger.localinfo(f'Error calling StateMachine.wait Dummy wait method for '
+                         f"'{self.name}' seconds={seconds}")
+        raise RuntimeError(f'Error calling StateMachine.wait Dummy wait method for '
+                           f"'{self.name}' seconds={seconds}")
 
     def spin(self, userdata=None):
+        """Spin the SM execute loop."""
         outcome = None
         while True:
             outcome = self.execute(userdata)
@@ -113,16 +123,19 @@ class StateMachine(State):
         return outcome
 
     def execute(self, userdata):
+        """Execute the SM."""
         if self._current_state is None:
             self.assert_consistent_transitions()
             self._current_state = self.initial_state
             self._userdata = userdata if userdata is not None else UserData()
             self._userdata(add_from=self._own_userdata)
-            # Logger.localinfo(f"Entering StateMachine {self.name} ({self._state_id}) initial state='{self._current_state.name}'")
+            # Logger.localinfo(f"Entering StateMachine '{self.name}' "
+            #                  f"({self._state_id}) initial state='{self._current_state.name}'")
         outcome = self._execute_current_state()
         return outcome
 
     def _execute_current_state(self):
+        """Execute the currently active state in this SM."""
         with UserData(reference=self._userdata, remap=self._remappings[self._current_state.name],
                       input_keys=self._current_state.input_keys, output_keys=self._current_state.output_keys
                       ) as userdata:
@@ -153,35 +166,41 @@ class StateMachine(State):
 
     @property
     def userdata(self):
+        """Return userdata for this SM."""
         return self._own_userdata
 
     @property
     def current_state(self):
+        """Return reference to the currently active state."""
         if self._current_state is not None:
             return self._current_state
 
-        raise StateMachineError("No state active!")
+        raise StateMachineError('No state active!')
 
     @property
     def current_state_label(self):
+        """Return name of the currently active state."""
         if self._current_state is not None:
             return self._current_state.name
 
-        raise StateMachineError("No state active!")
+        raise StateMachineError('No state active!')
 
     @property
     def initial_state(self):
+        """Return the initial state."""
         if len(self._states) > 0:
             return self._states[0]
 
-        raise StateMachineError("No states added yet!")
+        raise StateMachineError('No states added yet!')
 
     @property
     def initial_state_label(self):
+        """Return the name of the initial state."""
         return self.initial_state.name
 
     @property
     def sleep_duration(self):
+        """Return how long to sleep between execute steps."""
         if self._current_state is not None:
             return self._current_state.sleep_duration
 
@@ -206,9 +225,11 @@ class StateMachine(State):
 
     @property
     def _valid_targets(self):
+        """Get list of validate outcomes."""
         return list(self._labels.keys()) + self.outcomes
 
     def assert_consistent_transitions(self):
+        """Validate that transitions are consistent."""
         for transitions in self._transitions.values():
             for transition_target in transitions.values():
                 if transition_target not in self._valid_targets:

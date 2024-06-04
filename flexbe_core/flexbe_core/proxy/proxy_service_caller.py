@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,11 +31,11 @@
 
 """A proxy for providing single service connection for FlexBE behaviors."""
 
-from threading import Timer, Lock
-
-import rclpy
+from threading import Lock, Timer
 
 from flexbe_core.logger import Logger
+
+import rclpy
 
 
 class ProxyServiceCaller:
@@ -57,18 +57,18 @@ class ProxyServiceCaller:
     def shutdown():
         """Shut down this proxy by resetting all service callers."""
         try:
-            print(f"Shutdown proxy service caller with {len(ProxyServiceCaller._services)} topics ...")
+            print(f'Shutdown proxy service caller with {len(ProxyServiceCaller._services)} topics ...')
             for topic, service in ProxyServiceCaller._services.items():
                 try:
                     ProxyServiceCaller._services[topic] = None
                     try:
                         ProxyServiceCaller._node.destroy_client(service)
                     except Exception as exc:  # pylint: disable=W0703
-                        Logger.error("Something went wrong destroying service client"
-                                     f" for {topic}!\n  {type(exc)} - {str(exc)}")
+                        Logger.error('Something went wrong destroying service client'
+                                     f" for '{topic}'!\n  {type(exc)} - {str(exc)}")
                 except Exception as exc:  # pylint: disable=W0703
-                    Logger.error("Something went wrong during shutdown of proxy service"
-                                 f" caller for {topic}!\n  {type(exc)} - {exc}")
+                    Logger.error('Something went wrong during shutdown of proxy service'
+                                 f" caller for '{topic}'!\n  {type(exc)} - {exc}")
 
             ProxyServiceCaller._results.clear()
 
@@ -91,7 +91,8 @@ class ProxyServiceCaller:
 
     @classmethod
     def setupService(cls, topic, srv_type, wait_duration=10):
-        Logger.localerr("Deprecated: Use ProxyServiceCaller.setup_service instead!")
+        """Set up the service caller."""
+        Logger.localerr('Deprecated: Use ProxyServiceCaller.setup_service instead!')
         cls.setup_service(topic, srv_type, wait_duration)
 
     @classmethod
@@ -120,10 +121,10 @@ class ProxyServiceCaller:
                             Logger.localinfo(f'Existing service for {topic} with same message type name,'
                                              f' but different instance - re-create service!')
                         else:
-                            Logger.localwarn(f"Existing service for {topic} with "
+                            Logger.localwarn(f"Existing service for '{topic}' with "
                                              f"{ProxyServiceCaller._services[topic]['count']} references\n"
-                                             f"    with same service type name, but different instance\n"
-                                             f"    just re-create client with 1 reference - but be warned!")
+                                             f'    with same service type name, but different instance\n'
+                                             f'    just re-create client with 1 reference - but be warned!')
 
                         ProxyServiceCaller._node.executor.create_task(ProxyServiceCaller.destroy_service,
                                                                       ProxyServiceCaller._services[topic]['service'], topic)
@@ -132,7 +133,7 @@ class ProxyServiceCaller:
                                                                                                                  topic),
                                                                'count': 1}
                     else:
-                        raise TypeError("Trying to replace existing service caller with different service msg type")
+                        raise TypeError('Trying to replace existing service caller with different service msg type')
                 else:
                     ProxyServiceCaller._services[topic]['count'] = ProxyServiceCaller._services[topic]['count'] + 1
 
@@ -182,18 +183,18 @@ class ProxyServiceCaller:
                 new_request = client.srv_type.Request()
                 for attr, val in vars(new_request):
                     # Validate that attributes in common
-                    assert hasattr(request, attr), "Types must share common attributes!"
+                    assert hasattr(request, attr), 'Types must share common attributes!'
                 for attr, val in vars(request):
                     setattr(new_request, attr, val)
             else:
-                raise TypeError(f"Invalid request type {request.__class__.__name__}"
-                                f" (vs. {client.srv_type.Request.__name__}) "
-                                f"for topic {topic}")
+                raise TypeError(f'Invalid request type {request.__class__.__name__}'
+                                f' (vs. {client.srv_type.Request.__name__}) '
+                                f"for topic '{topic}'")
         else:
             # Same class definition instance as stored
             new_request = request
 
-        Logger.loginfo("Client about to call service")
+        Logger.loginfo('Client about to call service')
 
         return client.call(new_request)
 
@@ -229,12 +230,12 @@ class ProxyServiceCaller:
                 # used in the original service clients
 
                 new_request = client.srv_type.Request()
-                assert new_request.__slots__ == request.__slots__, f"Message attributes for {topic} do not match!"
+                assert new_request.__slots__ == request.__slots__, f"Message attributes for '{topic}' do not match!"
                 for attr in request.__slots__:
                     setattr(new_request, attr, getattr(request, attr))
             else:
-                raise TypeError(f"Invalid request type {request.__class__.__name__} "
-                                f"(vs. {client.srv_type.Request.__name__}) for topic {topic}")
+                raise TypeError(f'Invalid request type {request.__class__.__name__} '
+                                f'(vs. {client.srv_type.Request.__name__}) for topic {topic}')
         else:
             # Same class definition instance as stored
             new_request = request
@@ -278,12 +279,12 @@ class ProxyServiceCaller:
         """
         client_dict = ProxyServiceCaller._services.get(topic)
         if client_dict is None:
-            Logger.error(f"Service client {topic} not yet registered, need to add it first!")
+            Logger.error(f"Service client '{topic}' not yet registered, need to add it first!")
             return False
 
         client = client_dict['service']
         if not isinstance(wait_duration, float):
-            Logger.localinfo(f"Check for service {topic} requires floating point wait_duration in seconds (change to 0.001)!")
+            Logger.localinfo(f"Check for service '{topic}' requires floating point wait_duration in seconds (change to 0.001)!")
             wait_duration = 0.001
 
         warning_sent = False
@@ -307,15 +308,15 @@ class ProxyServiceCaller:
                 warning_sent = True
 
         if not available:
-            Logger.error(f"Service client {topic} not available! (timed out with wait_duration={wait_duration:.3f} seconds)")
+            Logger.error(f"Service client '{topic}' not available! (timed out with wait_duration={wait_duration:.3f} seconds)")
         elif warning_sent:
-            Logger.info("Finally found service %s..." % (topic))
+            Logger.info(f"Finally found service '{topic}' ...")
 
         return available
 
     @classmethod
     def _print_wait_warning(cls, topic):
-        Logger.warning("Waiting for service %s..." % (topic))
+        Logger.warning(f"Waiting for service '{topic}' ...")
 
     @classmethod
     def remove_client(cls, topic):
@@ -352,5 +353,5 @@ class ProxyServiceCaller:
                 Logger.localwarn(f'Some issue destroying the proxy service caller for {topic}!')
             del srv
         except Exception as exc:  # pylint: disable=W0703
-            Logger.error("Something went wrong destroying service caller"
-                         f" for {topic}!\n  {type(exc)} - {str(exc)}")
+            Logger.error('Something went wrong destroying service caller'
+                         f" for '{topic}'!\n  {type(exc)} - {str(exc)}")

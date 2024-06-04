@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,20 +31,22 @@
 
 """Test for onboard behaviors."""
 
-import sys
 import multiprocessing
 import os
+import sys
+import time
 import unittest
 import zlib
-import time
-import rclpy
-from rclpy.executors import MultiThreadedExecutor
 
-from flexbe_onboard import FlexbeOnboard
 from flexbe_core.core.topics import Topics
 from flexbe_core.proxy import ProxySubscriberCached
 
-from flexbe_msgs.msg import BehaviorSelection, BEStatus, BehaviorLog, BehaviorModification
+from flexbe_msgs.msg import BEStatus, BehaviorLog, BehaviorModification, BehaviorSelection
+
+from flexbe_onboard import FlexbeOnboard
+
+import rclpy
+from rclpy.executors import MultiThreadedExecutor
 
 
 class TestOnboard(unittest.TestCase):
@@ -52,6 +54,7 @@ class TestOnboard(unittest.TestCase):
 
     @classmethod
     def setUp(self):
+        """Set up the onboard test."""
         self.context = rclpy.context.Context()
         rclpy.init(context=self.context)
         num_threads = max(2, multiprocessing.cpu_count() - 1)
@@ -78,12 +81,13 @@ class TestOnboard(unittest.TestCase):
 
     @classmethod
     def tearDown(self):
+        """Tear down the onboard test."""
         self.node.destroy_node()
         self.onboard.destroy_node()
         self.executor.shutdown()
         rclpy.shutdown(context=self.context)
 
-    def assertStatus(self, expected, timeout, message=""):
+    def assertStatus(self, expected, timeout, message=''):
         """Assert that the expected onboard status is received before the timeout."""
         self.executor.spin_once(timeout_sec=0.01)
         for i in range(int(timeout * 100)):
@@ -97,21 +101,23 @@ class TestOnboard(unittest.TestCase):
             raise AssertionError('Did not receive a status as required.')
         msg = self.sub.get_last_msg(Topics._ONBOARD_STATUS_TOPIC)
         self.sub.remove_last_msg(Topics._ONBOARD_STATUS_TOPIC)
-        self.node.get_logger().info(f"assertStatus: msg= {str(msg)} expected={expected} - {message}?")
+        self.node.get_logger().info(f'assertStatus: msg= {str(msg)} expected={expected} - {message}?')
         self.assertEqual(msg.code, expected, msg=message)
         return msg
 
     def clear_extra_heartbeat_ready_messages(self):
+        """Clear heartbeat ready messages."""
         while self.sub.has_msg(Topics._ONBOARD_STATUS_TOPIC):
             msg = self.sub.get_last_msg(Topics._ONBOARD_STATUS_TOPIC)
             if msg.code == BEStatus.READY:
-                self.node.get_logger().info(f"clearing READY msg={str(msg)}")
+                self.node.get_logger().info(f'clearing READY msg={str(msg)}')
                 self.sub.remove_last_msg(Topics._ONBOARD_STATUS_TOPIC)  # Clear any heartbeat start up messages
             else:
                 break
             self.executor.spin_once(timeout_sec=0.01)
 
     def test_onboard_behaviors(self):
+        """Test onboard behaviors."""
         self.executor.spin_once(timeout_sec=1)
 
         behavior_pub = self.node.create_publisher(BehaviorSelection, Topics._START_BEHAVIOR_TOPIC, 1)
@@ -121,22 +127,22 @@ class TestOnboard(unittest.TestCase):
             self.executor.spin_once(timeout_sec=0.1)
 
         # wait for the initial status message
-        self.assertStatus(BEStatus.READY, 1, "BE is ready")
+        self.assertStatus(BEStatus.READY, 1, 'BE is ready')
 
         # send simple behavior request without checksum
-        be_key, _ = self.lib.find_behavior("Log Behavior Test")
+        be_key, _ = self.lib.find_behavior('Log Behavior Test')
         request = BehaviorSelection()
         request.behavior_key = be_key
         request.autonomy_level = 255
 
         self.clear_extra_heartbeat_ready_messages()
 
-        self.node.get_logger().info("Publish request ...")
+        self.node.get_logger().info('Publish request ...')
         behavior_pub.publish(request)
         self.executor.spin_once(timeout_sec=0.1)
 
-        self.node.get_logger().info("Check for expected error ...")
-        self.assertStatus(BEStatus.ERROR, 2, "Error - checksum test")
+        self.node.get_logger().info('Check for expected error ...')
+        self.assertStatus(BEStatus.ERROR, 2, 'Error - checksum test')
 
         # send valid simple behavior request
         with open(self.lib.get_sourcecode_filepath(be_key)) as f:
@@ -145,12 +151,12 @@ class TestOnboard(unittest.TestCase):
 
         self.clear_extra_heartbeat_ready_messages()
 
-        self.node.get_logger().info("Publish with checksum ...")
+        self.node.get_logger().info('Publish with checksum ...')
         behavior_pub.publish(request)
         self.executor.spin_once(timeout_sec=0.1)
 
-        self.assertStatus(BEStatus.STARTED, 1, "Started simple log behavior")
-        self.assertStatus(BEStatus.FINISHED, 3, "Finished simple log behavior")
+        self.assertStatus(BEStatus.STARTED, 1, 'Started simple log behavior')
+        self.assertStatus(BEStatus.FINISHED, 3, 'Finished simple log behavior')
         behavior_logs = []
         while self.sub.has_buffered(Topics._BEHAVIOR_LOGGING_TOPIC):
             behavior_logs.append(self.sub.get_from_buffer(Topics._BEHAVIOR_LOGGING_TOPIC).text)
@@ -158,8 +164,8 @@ class TestOnboard(unittest.TestCase):
         self.assertIn('Test data', behavior_logs)
 
         # send valid complex behavior request
-        self.node.get_logger().info("Request to find (INVALID) complex behavior ...")
-        be_key, _ = self.lib.find_behavior("Complex Behavior Test")
+        self.node.get_logger().info('Request to find (INVALID) complex behavior ...')
+        be_key, _ = self.lib.find_behavior('Complex Behavior Test')
         request = BehaviorSelection()
         request.behavior_key = be_key
         request.autonomy_level = 255
@@ -170,26 +176,26 @@ class TestOnboard(unittest.TestCase):
 
         with open(self.lib.get_sourcecode_filepath(be_key)) as f:
             content = f.read()
-        self.node.get_logger().info("Request behavior modification of (INVALID) complex behavior ...")
-        modifications = [('INVALID', 'core'), ('raise ValueError("TODO: Remove!")', '')]
+        self.node.get_logger().info('Request behavior modification of (INVALID) complex behavior ...')
+        modifications = [('INVALID', 'core'), ("raise ValueError('TODO: Remove!')", '')]
         for replace, by in modifications:
             index = content.index(replace)
             request.modifications.append(BehaviorModification(index_begin=index, index_end=index + len(replace), new_content=by))
         for replace, by in modifications:
             content = content.replace(replace, by)
 
-        self.node.get_logger().info("Modified modified behavior ...")
+        self.node.get_logger().info('Modified modified behavior ...')
         self.node.get_logger().info(content)
-        self.node.get_logger().info(30 * "=" + "\n\n")
+        self.node.get_logger().info(30 * '=' + '\n\n')
         request.behavior_id = zlib.adler32(content.encode()) & 0x7fffffff
 
         self.clear_extra_heartbeat_ready_messages()
 
-        self.node.get_logger().info("Publish modified behavior ...")
+        self.node.get_logger().info('Publish modified behavior ...')
         behavior_pub.publish(request)
         self.executor.spin_once(timeout_sec=0.1)
-        self.assertStatus(BEStatus.STARTED, 1, "Started modified")
-        result = self.assertStatus(BEStatus.FINISHED, 3, "Finished modified")
+        self.assertStatus(BEStatus.STARTED, 1, 'Started modified')
+        result = self.assertStatus(BEStatus.FINISHED, 3, 'Finished modified')
         self.assertEqual(result.args[0], 'finished')
         behavior_logs = []
 
@@ -205,15 +211,15 @@ class TestOnboard(unittest.TestCase):
         self.clear_extra_heartbeat_ready_messages()
 
         # send the same behavior with different parameters
-        self.node.get_logger().info("Republish modified behavior ...")
+        self.node.get_logger().info('Republish modified behavior ...')
         request.arg_keys = ['param', 'invalid']
         request.arg_values = ['value_1', 'should be ignored']
         request.input_keys = []
         request.input_values = []
         behavior_pub.publish(request)
         self.executor.spin_once(timeout_sec=0.1)
-        self.assertStatus(BEStatus.STARTED, 1, "Started modified parameters")
-        result = self.assertStatus(BEStatus.FINISHED, 3, "Finished modified parameters")
+        self.assertStatus(BEStatus.STARTED, 1, 'Started modified parameters')
+        result = self.assertStatus(BEStatus.FINISHED, 3, 'Finished modified parameters')
         self.assertEqual(result.args[0], 'failed')
         behavior_logs = []
 
@@ -226,7 +232,7 @@ class TestOnboard(unittest.TestCase):
             behavior_logs.append(self.sub.get_from_buffer(Topics._BEHAVIOR_LOGGING_TOPIC).text)
             self.executor.spin_once(timeout_sec=0.1)
         self.assertIn('value_1', behavior_logs)
-        self.node.get_logger().info("Done onboard testing!")
+        self.node.get_logger().info('Done onboard testing!')
         self.executor.spin_once(timeout_sec=0.1)
 
 

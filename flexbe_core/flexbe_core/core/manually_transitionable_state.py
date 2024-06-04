@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,11 +31,11 @@
 
 """ManuallyTransitionableState."""
 
-from flexbe_msgs.msg import CommandFeedback, OutcomeRequest
-
 from flexbe_core.core.ros_state import RosState
 from flexbe_core.core.topics import Topics
 from flexbe_core.logger import Logger
+
+from flexbe_msgs.msg import CommandFeedback, OutcomeRequest
 
 
 class ManuallyTransitionableState(RosState):
@@ -46,6 +46,7 @@ class ManuallyTransitionableState(RosState):
     """
 
     def __init__(self, *args, **kwargs):
+        """Initialize ManuallyTransitionableState instance."""
         super().__init__(*args, **kwargs)
         self.__execute = self.execute
         self.execute = self._manually_transitionable_execute
@@ -58,15 +59,15 @@ class ManuallyTransitionableState(RosState):
         if self._is_controlled and self._sub.has_buffered(Topics._CMD_TRANSITION_TOPIC):
             command_msg = self._sub.get_from_buffer(Topics._CMD_TRANSITION_TOPIC)
             self._pub.publish(Topics._CMD_FEEDBACK_TOPIC,
-                              CommandFeedback(command="transition", args=[command_msg.target, self.name]))
+                              CommandFeedback(command='transition', args=[command_msg.target, self.name]))
             if command_msg.target != self.name:
-                Logger.logwarn("Requested outcome for state %s but active state is %s" %
+                Logger.logwarn("Requested outcome for state '%s' but active state is '%s'" %
                                (command_msg.target, self.name))
             else:
                 self._force_transition = True
                 outcome = self.outcomes[command_msg.outcome]
                 self._manual_transition_requested = outcome
-                Logger.localinfo("--> Manually triggered outcome %s of state %s" % (outcome, self.name))
+                Logger.localinfo("--> Manually triggered outcome '%s' of state '%s'" % (outcome, self.name))
                 return outcome
         # otherwise, return the normal outcome
         self._force_transition = False

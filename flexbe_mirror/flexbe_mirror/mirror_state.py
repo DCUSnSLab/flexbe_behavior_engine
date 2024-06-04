@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -29,13 +29,13 @@
 
 """Simplified state for use with FlexBE UI State machine mirror."""
 
-from std_msgs.msg import String
-
 from flexbe_core import EventState
 from flexbe_core import Logger
 from flexbe_core.core.preemptable_state import PreemptableState
 from flexbe_core.core.topics import Topics
-from flexbe_core.proxy import ProxyPublisher, ProxySubscriberCached
+from flexbe_core.proxy import ProxyPublisher
+
+from std_msgs.msg import String
 
 
 class MirrorState(EventState):
@@ -54,11 +54,12 @@ class MirrorState(EventState):
     _pub = None
 
     def __init__(self, target_name, target_path, given_outcomes, outcome_autonomy):
+        """Initialize MirrorState instance."""
         # pylint: disable=unused-argument
         super().__init__(outcomes=given_outcomes)
         self._outcomes.append(PreemptableState._preempted_name)  # Add preempted to outcomes list (for -1 outcome)
         self._target_name = target_name
-        self._target_path = "/" + "/".join(target_path.split("/")[1:])  # Drop top-level name
+        self._target_path = '/' + '/'.join(target_path.split('/')[1:])  # Drop top-level name
         MirrorState._last_target_path = None  # reset any time that we build a new state machine
 
         if MirrorState._pub is None:
@@ -73,15 +74,16 @@ class MirrorState(EventState):
             MirrorState._pub.publish(Topics._BEHAVIOR_UPDATE_TOPIC, String(data=target_path))
 
     def execute_mirror(self, userdata):
+        """Execute the mirror state."""
         if self._entering:
             self.on_enter_mirror(userdata)
 
         if MirrorState._last_state_id == self.state_id:
             # Only process if relevant to this state
             if self._last_outcome is not None:
-                Logger.localwarn(f"Already processed outcome={self._last_outcome} for "
+                Logger.localwarn(f"Already processed outcome='{self._last_outcome}' for "
                                  f" state '{self.name}' ({self.state_id}) given new "
-                                 f"outcome index={MirrorState._last_state_outcome} - reprocessing anyway")
+                                 f"outcome index='{MirrorState._last_state_outcome}' - reprocessing anyway")
 
             MirrorState._last_state_id = None  # Flag that the message was handled
             if MirrorState._last_state_outcome is not None:
@@ -91,17 +93,19 @@ class MirrorState(EventState):
         return None
 
     def on_enter_mirror(self, userdata):
+        """Enter the mirror state."""
         self._entering = False
         self._last_outcome = None
         MirrorState.publish_update(self._target_path)
 
     def on_exit_mirror(self, userdata, desired_outcome):
+        """Exit mirror state."""
         try:
             self._last_outcome = self.outcomes[desired_outcome]
             return self._last_outcome
         except Exception as exc:  # pylint: disable=W0703
-            Logger.localerr(f"Error: MirrorState execute for {self.name}: "
-                            f"outcome index {desired_outcome} is not relevant ({len(self.outcomes)}) ")
+            Logger.localerr(f"Error: MirrorState execute for '{self.name}': "
+                            f"outcome index '{desired_outcome}' is not relevant ({len(self.outcomes)}) ")
             import traceback
-            Logger.localerr(f"{type(exc)} - {exc}\n{traceback.format_exc().replace('%', '%%')}")
+            Logger.localerr(f"Error: '{type(exc)}' - {exc}\n{traceback.format_exc().replace('%', '%%')}")
             return None

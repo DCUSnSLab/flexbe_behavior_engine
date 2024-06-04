@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,11 +30,12 @@
 """Flexbe_states testing."""
 from os.path import join
 
+from ament_index_python.packages import get_package_share_directory
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from ament_index_python.packages import get_package_share_directory
+from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
@@ -42,34 +43,34 @@ def generate_launch_description():
     flexbe_testing_dir = get_package_share_directory('flexbe_testing')
     flexbe_states_test_dir = get_package_share_directory('flexbe_states')
 
-    path = join(flexbe_states_test_dir, "tests")
+    path = join(flexbe_states_test_dir, 'tests')
 
-    testcases = ""
-    testcases += join(path, "calculation_state_simple.test") + "\n"
-    testcases += join(path, "calculation_state_none.test") + "\n"
-    testcases += join(path, "check_condition_state_true.test") + "\n"
-    testcases += join(path, "check_condition_state_invalid.test") + "\n"
-    testcases += join(path, "decision_state_simple.test") + "\n"
-    testcases += join(path, "flexible_calculation_state_simple.test") + "\n"
-    testcases += join(path, "input_state_import.test") + "\n"
-    testcases += join(path, "log_state_string.test") + "\n"
-    testcases += join(path, "log_state_int.test") + "\n"
-    # ### ros2 bag issues - testcases += join(path, "log_state_msg.test") + "\n"
-    testcases += join(path, "operator_decision_state_suggested.test") + "\n"
-    testcases += join(path, "subscriber_state_unavailable.test") + "\n"
-    # #### issues with pub/yaml in test testcases += join(path, "subscriber_state_pose.test") + "\n"
-    testcases += join(path, "wait_state_short.test") + "\n"
+    testcases = ''
+    testcases += join(path, 'calculation_state_simple.test') + '\n'
+    testcases += join(path, 'calculation_state_none.test') + '\n'
+    testcases += join(path, 'check_condition_state_true.test') + '\n'
+    testcases += join(path, 'check_condition_state_invalid.test') + '\n'
+    testcases += join(path, 'decision_state_simple.test') + '\n'
+    testcases += join(path, 'flexible_calculation_state_simple.test') + '\n'
+    testcases += join(path, 'input_state_import.test') + '\n'
+    testcases += join(path, 'log_state_string.test') + '\n'
+    testcases += join(path, 'log_state_int.test') + '\n'
+    # ### ros2 bag issues - testcases += join(path, 'log_state_msg.test') + '\n'
+    testcases += join(path, 'operator_decision_state_suggested.test') + '\n'
+    testcases += join(path, 'subscriber_state_unavailable.test') + '\n'
+    # #### issues with pub/yaml in test testcases += join(path, 'subscriber_state_pose.test') + '\n'
+    testcases += join(path, 'wait_state_short.test') + '\n'
 
     return LaunchDescription([
-        DeclareLaunchArgument("pkg", default_value="flexbe_states"),  # flexbe_testing"),
-        DeclareLaunchArgument("testcases", default_value=testcases),
-        DeclareLaunchArgument("compact_format", default_value='true'),
+        DeclareLaunchArgument('pkg', default_value='flexbe_states'),
+        DeclareLaunchArgument('testcases', default_value=testcases),
+        DeclareLaunchArgument('compact_format', default_value='true'),
         IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(join(flexbe_testing_dir, "launch", "flexbe_testing.launch.py")),
+            PythonLaunchDescriptionSource(join(flexbe_testing_dir, 'launch', 'flexbe_testing.launch.py')),
             launch_arguments={
-                'package': LaunchConfiguration("pkg"),
-                'compact_format': LaunchConfiguration("compact_format"),
-                'testcases': LaunchConfiguration("testcases"),
+                'package': LaunchConfiguration('pkg'),
+                'compact_format': LaunchConfiguration('compact_format'),
+                'testcases': LaunchConfiguration('testcases'),
             }.items()
         )
     ])

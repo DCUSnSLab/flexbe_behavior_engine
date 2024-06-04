@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
+"""OperatorDecisionState."""
 from flexbe_core import EventState, Logger
 
 
@@ -49,16 +49,19 @@ class OperatorDecisionState(EventState):
     """
 
     def __init__(self, outcomes, hint=None, suggestion=None):
+        """Initialize OperatorDecisionState instance."""
         super(OperatorDecisionState, self).__init__(outcomes=outcomes)
         self._hint = hint
         self._suggestion = suggestion
 
     def execute(self, userdata):
+        """Execute until operator defines outcome."""
         if self._suggestion is not None and self._suggestion in self._outcomes:
             return self._suggestion
 
         return None
 
     def on_enter(self, userdata):
+        """Call on entering state, and published suggested hint."""
         if self._hint is not None:
             Logger.loghint(self._hint)

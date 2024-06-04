@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,9 +28,10 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
+"""PublisherStringState."""
 from flexbe_core import EventState
 from flexbe_core.proxy import ProxyPublisher
+
 from std_msgs.msg import String
 
 
@@ -38,22 +39,25 @@ class PublisherStringState(EventState):
     """
     Publishes a string (std_msgs/String) message on a given topic name.
 
-    -- topic	string		The topic on which should be published.
+    -- topic    string        The topic on which should be published.
 
-    >= value 					Value of string.
+    >= value                  Value of string.
 
-    <= done 					Done publishing.
+    <= done                   Done publishing.
     """
 
     def __init__(self, topic):
+        """Initialize the instance."""
         super(PublisherStringState, self).__init__(outcomes=['done'], input_keys=['value'])
         self._topic = topic
         self._pub = ProxyPublisher({self._topic: String})
 
     def execute(self, userdata):
+        """Return done on first execution."""
         return 'done'
 
     def on_enter(self, userdata):
+        """Publish the string on entering state."""
         val = String()
         val.data = userdata.value
         self._pub.publish(self._topic, val)

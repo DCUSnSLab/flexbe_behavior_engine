@@ -1,7 +1,7 @@
 """Setup script for flexbe_mirror package."""
 
-from setuptools import setup
 from setuptools import find_packages
+from setuptools import setup
 
 PACKAGE_NAME = 'flexbe_mirror'
 

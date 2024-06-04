@@ -1,4 +1,4 @@
-# Copyright 2023 Christopher Newport University
+# Copyright 2024 Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -40,10 +40,12 @@ class MirrorConcurrencyContainer(MirrorStateMachine):
     """Manage updates of ConcurrencyContainer in the FlexBE mirror in response to changes."""
 
     def __init__(self, target_name, target_path, *args, **kwargs):
+        """Initialize MirrorConcurrrencyContainer instance."""
         MirrorStateMachine.__init__(self, target_name, target_path, *args, **kwargs)
         self._returned_outcomes = {}
 
     def on_enter_mirror(self, userdata):
+        """Enter mirror concurrency container state."""
         self.assert_consistent_transitions()
         self._current_state = self._states[:]
         self._userdata = None  # Mirror does not use user data
@@ -83,8 +85,8 @@ class MirrorConcurrencyContainer(MirrorStateMachine):
             # Handle outcome of this internal SM
             if self._last_outcome is not None:
                 Logger.localwarn(f"Mirror SM concurrency execute for '{self.name}' ({self._state_id}) : "
-                                 f"Already processed outcome={self._last_outcome} for "
-                                 f"outcome index={MirrorState._last_state_outcome} - reprocessing anyway")
+                                 f"Already processed outcome='{self._last_outcome}' for "
+                                 f'outcome index={MirrorState._last_state_outcome} - reprocessing anyway')
 
             MirrorState._last_state_id = None  # Flag that the message was handled
             if MirrorState._last_state_outcome is not None:
@@ -92,7 +94,8 @@ class MirrorConcurrencyContainer(MirrorStateMachine):
                 MirrorState._last_state_outcome = None  # Flag that the message was handled
                 return self.on_exit_mirror(userdata, desired_outcome,
                                            states=[s for s in self._states if (s.name not in self._returned_outcomes
-                                                                               or self._returned_outcomes[s.name] is None)])
+                                                                               or self._returned_outcomes[s.name] is None)
+                                                   ])
 
         return self._execute_current_state_mirror(userdata)
 
@@ -131,8 +134,8 @@ class MirrorConcurrencyContainer(MirrorStateMachine):
                     deep_states.append(state)
         elif self._current_state is not None:
             Logger.localerr(f"MirrorConcurrentContainer.get_deep_states '{self.name}' ({self._current_state._state_id})\n"
-                            f" - current state is NOT a list! Error type={type(self._current_state)}")
+                            f" - current state is NOT a list! Error type='{type(self._current_state)}'")
             Logger.localerr(f"    '{self._current_state.name}' ({self._current_state._state_id})")
-            raise TypeError(f"MirrorConcurrentContainer.get_deep_states {self.name} - "
-                            f"current state is NOT a list! Errror type={type(self._current_state)}")
+            raise TypeError(f"MirrorConcurrentContainer.get_deep_states '{self.name}' - "
+                            f"current state is NOT a list! Errror type='{type(self._current_state)}'")
         return deep_states

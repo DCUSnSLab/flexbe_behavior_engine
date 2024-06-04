@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -30,9 +30,10 @@
 
 
 """Test setup for substate."""
-import rclpy
 from flexbe_core import EventState
 from flexbe_core.proxy import ProxySubscriberCached
+
+import rclpy
 
 from std_msgs.msg import String
 
@@ -50,6 +51,7 @@ class TestSubState(EventState):
         self._timeout = TestSubState._node.get_clock().now() + rclpy.duration.Duration(seconds=1.5)
 
     def execute(self, userdata):
+        """Execute TestSubState."""
         if self._msg_counter == 0 and TestSubState._node.get_clock().now() > self._timeout:
             userdata.output_value = None
             return 'unavailable'

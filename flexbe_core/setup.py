@@ -1,6 +1,6 @@
 """Setup package for flexbe_core package."""
-from setuptools import setup
 from setuptools import find_packages
+from setuptools import setup
 
 PACKAGE_NAME = 'flexbe_core'
 

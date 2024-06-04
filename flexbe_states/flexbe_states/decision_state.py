@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+"""DecisionState."""
 from flexbe_core import EventState, Logger
 
 
@@ -38,11 +39,11 @@ class DecisionState(EventState):
 
     This state can be used if the further control flow of the behavior depends on an advanced condition.
 
-    -- outcomes 	string[]	A list containing all possible outcomes of this state
-    -- conditions 	function	Implements the condition check and returns one of the available outcomes.
+    -- outcomes     string[]    A list containing all possible outcomes of this state
+    -- conditions   function    Implements the condition check and returns one of the available outcomes.
                                 Has to expect one parameter which will be set to input_value.
 
-    ># input_value	object		Input to the condition function.
+    ># input_value  object      Input to the condition function.
     """
 
     def __init__(self, outcomes, conditions):
@@ -52,6 +53,7 @@ class DecisionState(EventState):
         self._conditions = conditions
 
     def execute(self, userdata):
+        """Execute state and check conditions and return associated outcome."""
         if self._conditions is not None:
             outcome = None
             try:

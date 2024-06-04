@@ -1,4 +1,4 @@
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,8 +28,6 @@
 
 
 """Pytest testing for flexbe_states."""
-
-
 from flexbe_testing.py_tester import PyTester
 
 
@@ -42,63 +40,63 @@ class TestFlexBEStates(PyTester):
 
     @classmethod
     def setUpClass(cls):
-
-        PyTester._package = "flexbe_states"
-        PyTester._tests_folder = "tests"
+        """Set up TestFlexBEStates class."""
+        PyTester._package = 'flexbe_states'
+        PyTester._tests_folder = 'tests'
 
         super().setUpClass()  # Do this last after setting package and tests folder
 
     # The tests
     def test_calculation_state_simple(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("calculation_state_simple")
+        self.run_test('calculation_state_simple')
 
     def test_calculation_state_none(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("calculation_state_none")
+        self.run_test('calculation_state_none')
 
     def test_check_condition_state_true(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("check_condition_state_true")
+        self.run_test('check_condition_state_true')
 
     def test_check_condition_state_invalid(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("check_condition_state_invalid")
+        self.run_test('check_condition_state_invalid')
 
     def test_decision_state_simple(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("decision_state_simple")
+        self.run_test('decision_state_simple')
 
     def test_flexible_calculation_state_simple(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("flexible_calculation_state_simple")
+        self.run_test('flexible_calculation_state_simple')
 
     def test_input_state_import(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("input_state_import")
+        self.run_test('input_state_import')
 
     def test_log_state_string(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("log_state_string")
+        self.run_test('log_state_string')
 
     def test_log_state_int(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("log_state_int")
+        self.run_test('log_state_int')
 
     def test_operator_decision_state_suggested(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("operator_decision_state_suggested")
+        self.run_test('operator_decision_state_suggested')
 
     def test_subscriber_state_unavailable(self):
         """Run FlexBE unit test given .test file."""
-        self.run_test("subscriber_state_unavailable")
+        self.run_test('subscriber_state_unavailable')
 
     # # #### issues with pub/yaml loading Pose - subscriber_state_pose
     # # ##### Not launching and handling properly - skip for now
     # def test_subscriber_state_pose(self):
     #     """Run FlexBE unit test given .test file."""
     #     # This test requires longer wait than normal
-    #     self.run_test("subscriber_state_pose", timeout_sec=1.5, max_cnt=5000)
+    #     self.run_test('subscriber_state_pose', timeout_sec=1.5, max_cnt=5000)
 
     def test_wait_state_short(self):
         """
@@ -106,7 +104,7 @@ class TestFlexBEStates(PyTester):
 
         This test requires longer wait than normal
         """
-        self.run_test("wait_state_short", timeout_sec=1.5, max_cnt=5000)
+        self.run_test('wait_state_short', timeout_sec=1.5, max_cnt=5000)
 
     # Tests with issues
     # # ### ros2 bag issues  - log_state_msg

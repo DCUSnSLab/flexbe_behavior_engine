@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,12 +31,12 @@
 
 """A state to interface with ROS."""
 
-from rclpy.exceptions import ParameterNotDeclaredException
-from flexbe_core.proxy import ProxyPublisher, ProxySubscriberCached
-
 from flexbe_core.core.state import State
 from flexbe_core.logger import Logger
+from flexbe_core.proxy import ProxyPublisher, ProxySubscriberCached
 from flexbe_core.state_logger import StateLogger
+
+from rclpy.exceptions import ParameterNotDeclaredException
 
 
 class RosState(State):
@@ -56,20 +56,21 @@ class RosState(State):
         if RosState._breakpoints is None:
             try:
                 RosState._breakpoints = node.get_parameter('breakpoints').get_parameter_value().string_array_value
-                Logger.localinfo(f"RosState:  using breakpoints={RosState._breakpoints}")
+                Logger.localinfo(f'RosState:  using breakpoints={RosState._breakpoints}')
             except ParameterNotDeclaredException:
                 Logger.localinfo("RosState: No 'breakpoints' parameter is defined")
                 RosState._breakpoints = []
 
     def __init__(self, *args, **kwargs):
+        """Initialize RosState instance."""
         super().__init__(*args, **kwargs)
 
         self._desired_period_ns = (1 / 10) * 1e9
 
-        if "desired_rate" in kwargs:
+        if 'desired_rate' in kwargs:
             Logger.localinfo('RosState: Set desired state update '
-                             f'rate to {kwargs["desired_rate"]} Hz.')
-            self._desired_period_ns = (1 / kwargs["desired_rate"]) * 1e9
+                             f"rate to {kwargs['desired_rate']} Hz.")
+            self._desired_period_ns = (1 / kwargs['desired_rate']) * 1e9
 
         self._is_controlled = False
 

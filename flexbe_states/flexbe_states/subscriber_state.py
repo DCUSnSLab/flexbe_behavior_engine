@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,9 +28,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""SubscriberState."""
 
 from flexbe_core import EventState, Logger
-
 from flexbe_core.proxy import ProxySubscriberCached
 from flexbe_core.proxy.qos import QOS_DEFAULT
 
@@ -52,7 +52,8 @@ class SubscriberState(EventState):
     <= unavailable              The topic is not available when this state becomes actives.
     """
 
-    def __init__(self, topic, msg_type="", blocking=True, clear=False, qos=QOS_DEFAULT):
+    def __init__(self, topic, msg_type='', blocking=True, clear=False, qos=QOS_DEFAULT):
+        """Initialize the SubscriberState instance."""
         super(SubscriberState, self).__init__(outcomes=['received', 'unavailable'],
                                               output_keys=['message'])
         self._topic = topic
@@ -63,15 +64,18 @@ class SubscriberState(EventState):
         self._connected = False
         self._sub = None
         if not self._connect():
+            # If topic is not available, we will retry on_enter
             Logger.logwarn('Topic %s for state %s not yet available.\n'
                            'Will try again when entering the state...' % (self._topic, self.name))
 
     def on_stop(self):
+        """Unsubscribe topic when behavior stops."""
         if self._connected:
             ProxySubscriberCached.unsubscribe_topic(self._topic)
             self._connected = False
 
     def execute(self, userdata):
+        """Execute and update user data with the last message received."""
         if not self._connected:
             userdata.message = None
             return 'unavailable'
@@ -84,6 +88,7 @@ class SubscriberState(EventState):
         return None
 
     def on_enter(self, userdata):
+        """Subscribe to topic if not connected, and clear old messages."""
         if not self._connected:
             if self._connect():
                 Logger.loginfo('Successfully subscribed to previously unavailable topic %s' % self._topic)
@@ -94,6 +99,7 @@ class SubscriberState(EventState):
             self._sub.remove_last_msg(self._topic)
 
     def _connect(self):
+        """Connect to publisher."""
         try:
             self._sub = ProxySubscriberCached({self._topic: self._msg_type}, qos=self._qos, inst_id=id(self))
             self._connected = True

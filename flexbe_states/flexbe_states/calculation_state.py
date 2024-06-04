@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-
+"""CalculationState."""
 from flexbe_core import EventState, Logger
 
 
@@ -39,18 +39,19 @@ class CalculationState(EventState):
     calculation is a function which takes exactly one parameter, input_value from userdata,
     and its return value is stored in output_value after leaving the state.
 
-    -- calculation  function	The function that performs the desired calculation.
+    -- calculation  function    The function that performs the desired calculation.
                                 It could be a private function (self.foo) manually defined in a behavior's source code
                                 or a lambda function (e.g., lambda x: x^2, where x will be the input_value).
 
-    ># input_value  object		Input to the calculation function.
+    ># input_value  object      Input to the calculation function.
 
-    #> output_value object		The result of the calculation.
+    #> output_value object      The result of the calculation.
 
-    <= done						Indicates completion of the calculation.
+    <= done                     Indicates completion of the calculation.
     """
 
     def __init__(self, calculation):
+        """Initialize the CalculationState instance."""
         super(CalculationState, self).__init__(outcomes=['done'],
                                                input_keys=['input_value'],
                                                output_keys=['output_value'])
@@ -58,11 +59,13 @@ class CalculationState(EventState):
         self._calculation_result = None
 
     def execute(self, userdata):
+        """Set userdata with calculation result and return done."""
         userdata.output_value = self._calculation_result
         # nothing to check
         return 'done'
 
     def on_enter(self, userdata):
+        """Call calculation on entering state."""
         if self._calculation is not None:
             try:
                 self._calculation_result = self._calculation(userdata.input_value)

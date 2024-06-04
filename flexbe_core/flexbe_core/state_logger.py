@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,21 +31,21 @@
 
 """Logger for active state information."""
 
-from functools import wraps, partial
-
 import logging
 import logging.config
 import os
 import pickle
 import time
-import yaml
+from functools import partial, wraps
+
+from flexbe_core.core.topics import Topics
+from flexbe_core.proxy import ProxyPublisher
 
 from rclpy.exceptions import ParameterNotDeclaredException
 
 from std_msgs.msg import String
 
-from flexbe_core.core.topics import Topics
-from flexbe_core.proxy import ProxyPublisher
+import yaml
 
 
 class StateLogger:
@@ -64,6 +64,7 @@ class StateLogger:
 
     @staticmethod
     def initialize_ros(node):
+        """Initialize ROS nodes."""
         StateLogger._node = node
         try:
             StateLogger._log_folder = node.get_parameter('log_folder')
@@ -92,9 +93,10 @@ class StateLogger:
 
     @staticmethod
     def initialize(be_name=None):
+        """Initialize the state logger."""
         log_folder = os.path.expanduser(StateLogger._log_folder.get_parameter_value().string_value)
 
-        if log_folder == "" or not StateLogger._log_enabled.get_parameter_value().bool_value:
+        if log_folder == '' or not StateLogger._log_enabled.get_parameter_value().bool_value:
             StateLogger.enabled = False
             return
         StateLogger.enabled = True
@@ -102,9 +104,9 @@ class StateLogger:
         if not os.path.exists(log_folder):
             os.makedirs(log_folder)
 
-        name = "states"
+        name = 'states'
         if be_name is not None:
-            name = be_name.replace(" ", "_").replace(",", "_").replace(".", "_").replace("/", "_").lower()
+            name = be_name.replace(' ', '_').replace(',', '_').replace('.', '_').replace('/', '_').lower()
 
         StateLogger._serialize_impl = StateLogger._log_serialize.get_parameter_value().string_value
 
@@ -126,12 +128,13 @@ class StateLogger:
             },
             'loggers': {'flexbe': {'level': 'INFO', 'handlers': ['file']}}
         }, **yaml.safe_load(StateLogger._log_config.get_parameter_value().string_value))
-        if ('handlers' in logger_config and 'file' in logger_config['handlers']
+        if ('handlers' in logger_config
+                and 'file' in logger_config['handlers']
                 and 'filename' in logger_config['handlers']['file']):
             logger_config['handlers']['file']['filename'] %= {
                 'log_folder': log_folder,
                 'behavior': name,
-                'timestamp': time.strftime("%Y-%m-%d-%H_%M_%S")
+                'timestamp': time.strftime('%Y-%m-%d-%H_%M_%S')
             }
         if 'loggers' in logger_config and 'flexbe' in logger_config['loggers']:
             level = StateLogger._log_level.get_parameter_value().string_value
@@ -140,6 +143,7 @@ class StateLogger:
 
     @staticmethod
     def shutdown():
+        """Shutdown state logging."""
         if not StateLogger.enabled:
             return
         logging.shutdown()
@@ -279,6 +283,7 @@ class YamlFormatter(logging.Formatter):
     """Special yaml formatting class."""
 
     def format(self, record):
+        """Format yaml with prefix."""
         record.msg.update(logger=record.name, loglevel=record.levelname)
         return '- %s' % super().format(record)
 
@@ -287,10 +292,12 @@ class PublishBehaviorLogMessage(logging.Handler):
     """publish messages to behavior logs."""
 
     def __init__(self, level=logging.NOTSET, topic=Topics._STATE_LOGGER_TOPIC):
+        """Initialize instance."""
         super().__init__(level)
         self._topic = topic
         self._pub = ProxyPublisher({self._topic: String})
 
     def emit(self, record):
+        """Emit message."""
         message = self.format(record)
         self._pub.publish(self._topic, String(data=message))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -39,11 +39,13 @@ class PriorityContainer(OperatableStateMachine):
     active_container = None
 
     def __init__(self, conditions=None, *args, **kwargs):
+        """Initialize instance of PriorityContainer."""
         super().__init__(*args, **kwargs)
         self._parent_active_container = None
         self._type = OperatableStateMachine.ContainerType.PriorityContainer.value
 
     def execute(self, *args, **kwargs):
+        """Execute the priority container."""
         if (PriorityContainer.active_container is None
             or not all(p == PriorityContainer.active_container.split('/')[i]
                        for i, p in enumerate(self.path.split('/')))):

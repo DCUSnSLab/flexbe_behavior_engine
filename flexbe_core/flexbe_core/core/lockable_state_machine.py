@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -46,13 +46,16 @@ class LockableStateMachine(RosStateMachine):
     path_for_switch = None
 
     def __init__(self, *args, **kwargs):
+        """Initialize LockableStateMachine instance."""
         super().__init__(*args, **kwargs)
         self._locked = False
 
     def _is_internal_transition(self, transition_target):
+        """Is a valid transition."""
         return transition_target in self._labels
 
     def transition_allowed(self, state, outcome):
+        """Is transition allowed."""
         if outcome is None or outcome == 'None':
             return True
         transition_target = self._transitions[state].get(outcome)
@@ -64,9 +67,10 @@ class LockableStateMachine(RosStateMachine):
     # for switching
 
     def execute(self, userdata):
+        """Execute lockable SM logic."""
         if (LockableStateMachine.path_for_switch is not None
                 and LockableStateMachine.path_for_switch.startswith(self.path)):
-            path_segments = LockableStateMachine.path_for_switch.replace(self.path, "", 1).split("/")
+            path_segments = LockableStateMachine.path_for_switch.replace(self.path, '', 1).split('/')
             wanted_state = path_segments[1]
             self._current_state = self._labels[wanted_state]
             if len(path_segments) <= 2:
@@ -74,21 +78,25 @@ class LockableStateMachine(RosStateMachine):
         return super().execute(userdata)
 
     def replace_userdata(self, userdata):
+        """Replace userdata."""
         self._userdata = userdata
 
     def replace_state(self, state):
+        """Replace state (while locked)."""
         old_state = self._labels[state.name]
         state._parent = old_state._parent
         self._states[self._states.index(old_state)] = state
         self._labels[state.name] = state
 
     def remove_state(self, state):
+        """Remove state."""
         del self._labels[state.name]
         self._states.remove(state)
 
     # for locking
 
     def lock(self, path):
+        """Lock this state."""
         if path == self.path:
             self._locked = True
             return True
@@ -99,6 +107,7 @@ class LockableStateMachine(RosStateMachine):
         return False
 
     def unlock(self, path):
+        """Unlock this state."""
         if path == self.path:
             self._locked = False
             return True
@@ -109,9 +118,11 @@ class LockableStateMachine(RosStateMachine):
         return False
 
     def is_locked(self):
+        """Is this state locked."""
         return self._locked
 
     def is_locked_inside(self):
+        """Is interior state locked."""
         if self._locked:
             return True
         for state in self._states:
@@ -125,6 +136,7 @@ class LockableStateMachine(RosStateMachine):
         return False
 
     def get_locked_state(self):
+        """Get state that is locked inside."""
         if self._locked:
             return self
         for state in self._states:

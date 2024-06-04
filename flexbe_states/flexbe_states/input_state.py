@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -28,12 +28,14 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+"""InputState."""
 import ast
 import pickle
 
 from flexbe_core import EventState, Logger
-from flexbe_msgs.action import BehaviorInput
 from flexbe_core.proxy import ProxyActionClient
+
+from flexbe_msgs.action import BehaviorInput
 
 
 class InputState(EventState):
@@ -75,15 +77,18 @@ class InputState(EventState):
         self._received = False
 
     def on_start(self):
+        """Set up proxy action client for behavior input server on behavior start."""
         self._client = ProxyActionClient({self._action_topic: BehaviorInput}, wait_duration=0.0)
         self._connected = True
 
     def on_stop(self):
+        """Stop client when behavior stops."""
         ProxyActionClient.remove_client(self._action_topic)
         self._client = None
         self._connected = False
 
     def execute(self, userdata):
+        """Execute state waiting for action result."""
         if not self._connected:
             return 'no_connection'
         if self._received:
@@ -105,7 +110,7 @@ class InputState(EventState):
                     #     Never unpickle data received from an untrusted or unauthenticated source.
                     response_data = pickle.loads(input_data)
 
-                    Logger.localinfo(f" InputState returned {type(response_data)} : {response_data}")
+                    Logger.localinfo(f' InputState returned {type(response_data)} : {response_data}')
                     userdata.data = response_data
                 except Exception as exc:  # pylint: disable=W0703
                     Logger.logwarn(f"Was unable to load provided data:\n    '{result.data}'\n    {str(exc)}")
@@ -118,6 +123,7 @@ class InputState(EventState):
         return None
 
     def on_enter(self, userdata):
+        """Send goal to action server on entering state."""
         self._received = False
 
         # Retrive the goal for the BehaviorInput Action.

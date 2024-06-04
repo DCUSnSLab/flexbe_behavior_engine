@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -29,6 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
+"""FlexibleCalculationState."""
 from flexbe_core import EventState, Logger
 
 
@@ -59,11 +60,13 @@ class FlexibleCalculationState(EventState):
         self._calculation_result = None
 
     def execute(self, userdata):
+        """Set userdata with calculation result and return done."""
         userdata.output_value = self._calculation_result
         # nothing to check
         return 'done'
 
     def on_enter(self, userdata):
+        """Do calculation on entering state."""
         if self._calculation is not None:
             try:
                 self._calculation_result = self._calculation(**{key: userdata[key] for key in self._input_keys})

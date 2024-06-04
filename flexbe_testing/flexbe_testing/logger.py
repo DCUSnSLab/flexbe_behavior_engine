@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@
 """Bundles static methods for test case logging."""
 
 import traceback
+
 from rclpy.node import Node
 
 
@@ -44,10 +45,12 @@ class Logger:
 
     @staticmethod
     def initialize(node: Node):
+        """Initialize node."""
         Logger._node = node
 
     @classmethod
     def _param_positive(cls):
+        """Check print debug positive."""
         print_debug_positive = False
         try:
             print_debug_positive = Logger._node.get_parameter('~print_debug_positive').get_parameter_value().bool_value
@@ -59,6 +62,7 @@ class Logger:
 
     @classmethod
     def _param_negative(cls):
+        """Check print debug negative."""
         print_debug_negative = False
         try:
             print_debug_negative = Logger._node.get_parameter('~print_debug_negative').get_parameter_value().bool_value
@@ -161,4 +165,4 @@ class Logger:
 
     def __init__(self):
         """DO NOT USE: use class print methods instead."""
-        raise NotImplementedError("use static methods and attributes")
+        raise NotImplementedError('use static methods and attributes')

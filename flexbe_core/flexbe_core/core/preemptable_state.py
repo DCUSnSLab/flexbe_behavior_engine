@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,13 +31,13 @@
 
 """PreemptableState."""
 
-from std_msgs.msg import Empty
-
-from flexbe_msgs.msg import CommandFeedback
-
 from flexbe_core.core.lockable_state import LockableState
 from flexbe_core.core.topics import Topics
 from flexbe_core.logger import Logger
+
+from flexbe_msgs.msg import CommandFeedback
+
+from std_msgs.msg import Empty
 
 
 class PreemptableState(LockableState):
@@ -50,6 +50,7 @@ class PreemptableState(LockableState):
     preempt = False
 
     def __init__(self, *args, **kwargs):
+        """Initialize PreemptableState instance."""
         super().__init__(*args, **kwargs)
         self.__execute = self.execute
         self.execute = self._preemptable_execute
@@ -59,13 +60,13 @@ class PreemptableState(LockableState):
     def _preemptable_execute(self, *args, **kwargs):
         if self._is_controlled and self._sub.has_msg(Topics._CMD_PREEMPT_TOPIC):
             self._sub.remove_last_msg(Topics._CMD_PREEMPT_TOPIC)
-            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command="preempt"))
+            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command='preempt'))
             PreemptableState.preempt = True
-            Logger.localinfo("--> Behavior will be preempted")
+            Logger.localinfo('--> Behavior will be preempted')
 
         if PreemptableState.preempt:
             if not self._is_controlled:
-                Logger.localinfo("Behavior will be preempted")
+                Logger.localinfo('Behavior will be preempted')
             self._force_transition = True
             return self._preempted_name
 
@@ -75,7 +76,7 @@ class PreemptableState(LockableState):
         # make sure we dont miss a preempt even if not being executed
         if self._is_controlled and self._sub.has_msg(Topics._CMD_PREEMPT_TOPIC):
             self._sub.remove_last_msg(Topics._CMD_PREEMPT_TOPIC)
-            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command="preempt"))
+            self._pub.publish(Topics._CMD_FEEDBACK_TOPIC, CommandFeedback(command='preempt'))
             PreemptableState.preempt = True
 
     def _enable_ros_control(self):
