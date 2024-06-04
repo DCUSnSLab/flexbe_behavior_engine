@@ -8,10 +8,10 @@ jobs:
   test:
     strategy:
       matrix:
-        ros: [iron]  # , rolling]
+        ros: [jazzy] # , rolling]
         include:
-        - os: ubuntu-22.04
-          ros: iron
+        - os: ubuntu-24.04
+          ros: jazzy
           python: python3
           ci_branch: ros2-devel
         # - os: ubuntu-24.04

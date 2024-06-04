@@ -19,7 +19,6 @@
     <depend>rclpy</depend>
     <depend>flexbe_core</depend>
     <depend>flexbe_msgs</depend>
-    <exec_depend>python3-qtpy</exec_depend>
 
     <test_depend>ament_copyright</test_depend>
     <test_depend>ament_flake8</test_depend>

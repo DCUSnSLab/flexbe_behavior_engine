@@ -14,7 +14,7 @@ setup(
         # No tests yet ('share/' + PACKAGE_NAME + '/tests', glob('tests/*.test')),
     ],
     install_requires=['setuptools',
-                      'pyside6'],
+                      'PySide6'],
     zip_safe=True,
     maintainer='phil',
     maintainer_email='philsplus@gmail.com',
