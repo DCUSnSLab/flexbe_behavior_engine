@@ -1,6 +1,6 @@
 """Setup for flexbe_input package."""
-from setuptools import setup
 from setuptools import find_packages
+from setuptools import setup
 
 PACKAGE_NAME = 'flexbe_input'
 
@@ -11,9 +11,10 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + PACKAGE_NAME]),
         ('share/' + PACKAGE_NAME, ['package.xml']),
-        # No tests yet ('share/' + PACKAGE_NAME + "/tests", glob('tests/*.test')),
+        # No tests yet ('share/' + PACKAGE_NAME + '/tests', glob('tests/*.test')),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools',
+                      'pyside6'],
     zip_safe=True,
     maintainer='phil',
     maintainer_email='philsplus@gmail.com',

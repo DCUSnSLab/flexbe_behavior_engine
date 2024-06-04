@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2023 Philipp Schillinger, Team ViGIR, Christopher Newport University
+# Copyright 2024 Philipp Schillinger, Team ViGIR, Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -37,10 +37,12 @@ Created on 02/13/2015
 @author: Philipp Schillinger, Brian Wright
 """
 
-from rclpy.action import ActionClient
+from flexbe_core import Logger
 
 from flexbe_msgs.action import BehaviorInput
-from flexbe_core import Logger
+
+from rclpy.action import ActionClient
+
 from .complex_action_server import ComplexActionServer
 
 
@@ -57,10 +59,11 @@ class FlexBEInput:
                                        execute_cb=self.execute_cb,
                                        auto_start=False)
 
-        Logger.loginfo("Ready for data requests...")
+        Logger.loginfo('Ready for data requests...')
 
     def execute_cb(self, goal, goal_handle):
-        Logger.loginfo("--> Got a request!")
+        """Execute callback."""
+        Logger.loginfo('--> Got a request!')
         Logger.loginfo(f"'{goal.msg}'")
 
         relay_ocs_client_ = ActionClient(self._node,
@@ -68,28 +71,28 @@ class FlexBEInput:
                                          'flexbe/operator_input')
 
         # wait for data msg
-        Logger.localinfo("FlexBEInput waiting to relay from OCS ...")
+        Logger.localinfo('FlexBEInput waiting to relay from OCS ...')
         relay_ocs_client_.wait_for_server()
-        Logger.localinfo("FlexBEInput is ready!")
+        Logger.localinfo('FlexBEInput is ready!')
 
         # Fill in the goal here
         result = relay_ocs_client_.send_goal(goal)  # This is a blocking call!
 
         # result.data now serialized
         data_str = result.data
-        Logger.localinfo(f"FlexBEInput result={data_str}")
+        Logger.localinfo(f'FlexBEInput result={data_str}')
 
         if result.result_code == BehaviorInput.Result.RESULT_OK:
             self._as.set_succeeded(BehaviorInput.Result(result_code=BehaviorInput.Result.RESULT_OK,
-                                                        data=data_str), "ok", goal_handle)
+                                                        data=data_str), 'ok', goal_handle)
 
         elif result.result_code == BehaviorInput.Result.RESULT_FAILED:
             # remove
             self._as.set_succeeded(BehaviorInput.Result(result_code=BehaviorInput.Result.RESULT_FAILED,
-                                                        data=data_str), "failed", goal_handle)
-            Logger.loginfo("<-- Replied with FAILED")
+                                                        data=data_str), 'failed', goal_handle)
+            Logger.loginfo('<-- Replied with FAILED')
 
         elif result.result_code == BehaviorInput.Result.RESULT_ABORTED:
             self._as.set_succeeded(BehaviorInput.Result(result_code=BehaviorInput.Result.RESULT_ABORTED,
-                                                        data=data_str), "Aborted", goal_handle)
-            Logger.loginfo("<-- Replied with ABORT")
+                                                        data=data_str), 'Aborted', goal_handle)
+            Logger.loginfo('<-- Replied with ABORT')

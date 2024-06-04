@@ -1,4 +1,4 @@
-# Copyright 2023 Christopher Newport University
+# Copyright 2024 Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -31,15 +31,17 @@ import pickle
 import sys
 import time
 
-from PyQt5 import QtWidgets
+from PySide6.QtWidgets import QApplication
+
+from flexbe_core import Logger
+
+from flexbe_input.input_gui import InputGUI
+
+from flexbe_msgs.action import BehaviorInput
 
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
-
-from flexbe_core import Logger
-from flexbe_input.input_gui import InputGUI
-from flexbe_msgs.action import BehaviorInput
 
 
 class InputActionServer(Node):
@@ -51,6 +53,7 @@ class InputActionServer(Node):
     """
 
     def __init__(self):
+        """Initialize the InputActionServer instance."""
         super().__init__('input_action_server')
         self._server = ActionServer(
             self,
@@ -58,7 +61,8 @@ class InputActionServer(Node):
             'flexbe/behavior_input',
             self.execute_callback
         )
-        self._app = None
+        self._app = QApplication(sys.argv)
+
         self._input = None
         Logger.initialize(self)
 
@@ -71,11 +75,11 @@ class InputActionServer(Node):
         @return prompt, instance type, number of elements
         """
         # Thse are the only types handled by this simple UI
-        types = {BehaviorInput.Goal.REQUEST_INT: ("int", int, 1),
-                 BehaviorInput.Goal.REQUEST_FLOAT: ("float", (float, int), 1),  # int acceptable for desired float
-                 BehaviorInput.Goal.REQUEST_2D: ("list of 2 numbers", (list, tuple), 2),  # allow either list or tuple
-                 BehaviorInput.Goal.REQUEST_3D: ("list of 3 numbers", (list, tuple), 3),  # e.g., "[1, 2]", "(1, 2)", or "1, 2"
-                 BehaviorInput.Goal.REQUEST_4D: ("list of 4 numbers", (list, tuple), 4),
+        types = {BehaviorInput.Goal.REQUEST_INT: ('int', int, 1),
+                 BehaviorInput.Goal.REQUEST_FLOAT: ('float', (float, int), 1),  # int acceptable for desired float
+                 BehaviorInput.Goal.REQUEST_2D: ('list of 2 numbers', (list, tuple), 2),  # allow either list or tuple
+                 BehaviorInput.Goal.REQUEST_3D: ('list of 3 numbers', (list, tuple), 3),  # e.g., '[1, 2]', '(1, 2)', or '1, 2'
+                 BehaviorInput.Goal.REQUEST_4D: ('list of 4 numbers', (list, tuple), 4),
                  }
 
         if request_type in types:
@@ -84,34 +88,32 @@ class InputActionServer(Node):
         return None
 
     def execute_callback(self, goal_handle):
-
+        """On receipt of goal, open GUI and request input from user."""
         result = BehaviorInput.Result()
-        Logger.localinfo("Requesting: %s", goal_handle.request.msg)
+        Logger.localinfo('Requesting: %s', goal_handle.request.msg)
         try:
             type_text, type_class, expected_elements = self.get_input_type(goal_handle.request.request_type)
-            prompt_text = f"{goal_handle.request.msg}\n{type_text}"
+            prompt_text = f'{goal_handle.request.msg}\n{type_text}'
         except Exception as exc:  # pylint: disable=W0703
-            result.data = f"Input action server UI does not handle requests for type {goal_handle.request.request_type}"
+            result.data = f'Input action server UI does not handle requests for type {goal_handle.request.request_type}'
             result.result_code = BehaviorInput.Result.RESULT_ABORTED
-            Logger.localwarn(f"{result.data}\n    Exception: {exc}")
+            Logger.localwarn(f'{result.data}\n    Exception: {exc}')
             goal_handle.abort()
             return result
 
         # Get data from user
-        app = QtWidgets.QApplication(sys.argv)
         mainWin = InputGUI(prompt_text)
         mainWin.show()
         while mainWin.is_none() and mainWin.isVisible():
-            QtWidgets.qApp.processEvents()
-            time.sleep(.05)
+            self._app.processEvents()
+            time.sleep(.01)
         self._input = mainWin.get_input()
         mainWin.close()
-        app.quit()
 
         if self._input is None:
-            Logger.logwarn("No data entered while input window was visible!")
+            Logger.logwarn('No data entered while input window was visible!')
             result.result_code = BehaviorInput.Result.RESULT_ABORTED
-            result.data = "No data entered while input window was visible!"
+            result.data = 'No data entered while input window was visible!'
             goal_handle.abort()
         else:
             try:
@@ -125,7 +127,7 @@ class InputActionServer(Node):
 
                 data_len = 1 if isinstance(input_data, (int, float)) else len(input_data)
                 if data_len != expected_elements:
-                    result.data = (f"Invalid number of elements {data_len} not {expected_elements} "
+                    result.data = (f'Invalid number of elements {data_len} not {expected_elements} '
                                    f"of {type_class} - expected '{type_text}'")
                     result.result_code = BehaviorInput.Result.RESULT_FAILED
                     Logger.localwarn(result.data)
@@ -133,11 +135,11 @@ class InputActionServer(Node):
                     return result
 
                 result.data = str(pickle.dumps(input_data))
-                Logger.localinfo("    Data returned %s", self._input)
+                Logger.localinfo('    Data returned %s', self._input)
                 result.result_code = BehaviorInput.Result.RESULT_OK
                 goal_handle.succeed()
             except Exception as exc:  # pylint: disable=W0703
-                Logger.logwarn("Failure to set data: %s", str(exc))
+                Logger.logwarn('Failure to set data: %s', str(exc))
                 result.result_code = BehaviorInput.Result.RESULT_FAILED
                 result.data = str(exc)
                 goal_handle.abort()
@@ -146,14 +148,15 @@ class InputActionServer(Node):
 
 
 def main(args=None):
+    """Run action server and GUI on request."""
     rclpy.init(args=args)
     action_server = InputActionServer()
     try:
-        Logger.localinfo("Waiting for requests from FlexBE input state ...")
+        Logger.localinfo('Waiting for requests from FlexBE input state ...')
         rclpy.spin(action_server)
     except KeyboardInterrupt:
         pass
-    print("\nShutting down the input action server!", flush=True)
+    print('\nShutting down the input action server!', flush=True)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# Copyright 2023 Christopher Newport University
+# Copyright 2024 Christopher Newport University
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -26,8 +26,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt5.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton
-from PyQt5.QtCore import QSize
+"""FlexBE InputGUI."""
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QLabel, QLineEdit, QMainWindow, QPushButton
 
 
 class InputGUI(QMainWindow):
@@ -38,12 +39,13 @@ class InputGUI(QMainWindow):
     """
 
     def __init__(self, prompt):
+        """Initialize the InputGUI instance."""
         QMainWindow.__init__(self)
 
         self.input = None
 
         self.setMinimumSize(QSize(320, 140))
-        self.setWindowTitle("Input State")
+        self.setWindowTitle('FlexBE Input State')
 
         self.prompt = QLabel(self)
         self.prompt.move(60, 20)
@@ -62,12 +64,15 @@ class InputGUI(QMainWindow):
         self.adjustSize()
 
     def set_input(self):
+        """Set input text from GUI."""
         self.input = self.line.text()
 
     def is_none(self):
+        """Return true while input is none."""
         if self.input is None:
             return True
         return False
 
     def get_input(self):
+        """Get the stored input."""
         return self.input
