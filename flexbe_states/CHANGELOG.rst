@@ -1,6 +1,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_states
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.2 (2024-06-04)
+------------------
+* flake8/pycodestyle cleanup
+
 3.0.1 (2024-05-31)
 ------------------
 * use onboard heartbeat to trigger launcher
