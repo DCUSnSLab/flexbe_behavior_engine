@@ -8,12 +8,12 @@ jobs:
   test:
     strategy:
       matrix:
-        ros: [rolling]
+        ros: [jazzy]
         include:
         - os: ubuntu-24.04
-          ros: rolling
+          ros: jazzy
           python: python3
-          ci_branch: ros2-devel
+          ci_branch: jazzy
 
     runs-on: ${{ matrix.os }}
     env:
