@@ -1,6 +1,10 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_widget
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.2 (2024-06-04)
+------------------
+* flake8/pycodestyle cleanup
+
 3.0.1 (2024-05-31)
 ------------------
 * add argument to allow auto launching behavior based on initial heartbeat message (instead of READY signal published every 10 seconds)

@@ -4,7 +4,7 @@
     schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
     <name>flexbe_input</name>
-    <version>3.0.1</version>
+    <version>3.0.2</version>
     <description>
         flexbe_input enables to send data to onboard behavior when required.
     </description>
@@ -19,7 +19,6 @@
     <depend>rclpy</depend>
     <depend>flexbe_core</depend>
     <depend>flexbe_msgs</depend>
-    <exec_depend>python3-qtpy</exec_depend>
 
     <test_depend>ament_copyright</test_depend>
     <test_depend>ament_flake8</test_depend>

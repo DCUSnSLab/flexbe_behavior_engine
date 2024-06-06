@@ -6,7 +6,7 @@ PACKAGE_NAME = 'flexbe_input'
 
 setup(
     name=PACKAGE_NAME,
-    version='3.0.1',
+    version='3.0.2',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + PACKAGE_NAME]),
@@ -14,7 +14,7 @@ setup(
         # No tests yet ('share/' + PACKAGE_NAME + '/tests', glob('tests/*.test')),
     ],
     install_requires=['setuptools',
-                      'pyside6'],
+                      'PySide6'],
     zip_safe=True,
     maintainer='phil',
     maintainer_email='philsplus@gmail.com',

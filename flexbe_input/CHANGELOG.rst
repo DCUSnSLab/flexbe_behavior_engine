@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package flexbe_input
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+3.0.2 (2024-06-04)
+------------------
+* use PySide6 for UI given more permissive license
+* flake8 cleanup
+
 3.0.1 (2024-05-31)
 ------------------
 
