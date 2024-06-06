@@ -17,7 +17,9 @@ You may also want to check out the quick start tutorial demonstrations at [FlexB
 
 Iron ![ROS Build Farm](https://build.ros2.org/job/Idev__flexbe_behavior_engine__ubuntu_jammy_amd64/badge/icon)
 
-Rolling ![ROS Build Farm](https://build.ros2.org/job/Rdev__flexbe_behavior_engine__ubuntu_jammy_amd64/badge/icon)
+Jazzy ![ROS Build Farm](https://build.ros2.org/job/Jdev__flexbe_behavior_engine__ubuntu_noble_amd64/badge/icon)
+
+Rolling ![ROS Build Farm](https://build.ros2.org/job/Rdev__flexbe_behavior_engine__ubuntu_noble_amd64/badge/icon)
 
 ## Installation
 
